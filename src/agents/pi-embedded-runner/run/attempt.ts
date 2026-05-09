@@ -1407,7 +1407,7 @@ export async function runEmbeddedAttempt(
     let trajectoryEndRecorded = false;
     try {
       await repairTranscriptStateIfNeeded({
-        transcriptPath: params.transcriptLocator,
+        transcriptLocator: params.transcriptLocator,
         debug: (message) => log.debug(message),
         warn: (message) => log.warn(message),
       });

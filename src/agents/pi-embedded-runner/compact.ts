@@ -952,7 +952,7 @@ async function compactEmbeddedPiSessionDirectOnce(
 
     try {
       await repairTranscriptStateIfNeeded({
-        transcriptPath: params.transcriptLocator,
+        transcriptLocator: params.transcriptLocator,
         debug: (message) => log.debug(message),
         warn: (message) => log.warn(message),
       });
