@@ -602,7 +602,7 @@ describe("sessions", () => {
 
   it("uses agent id when resolving transcript locator fallback paths", () => {
     withStateDir("/custom/state", () => {
-      const transcriptLocator = resolveSessionTranscriptLocator("sess-2", undefined, {
+      const transcriptLocator = resolveSessionTranscriptLocator("sess-2", {
         agentId: "codex",
       });
       expect(transcriptLocator).toBe(
@@ -611,15 +611,9 @@ describe("sessions", () => {
     });
   });
 
-  it("does not reuse legacy cross-agent absolute transcriptLocator paths", () => {
+  it("derives transcript locators from the requested agent", () => {
     withStateDir(path.resolve("/different/state"), () => {
-      const originalBase = path.resolve("/original/state");
-      const bot2Session = path.join(originalBase, "agents", "bot2", "sessions", "sess-1.jsonl");
-      const transcriptLocator = resolveSessionTranscriptLocator(
-        "sess-1",
-        { transcriptLocator: bot2Session },
-        { agentId: "bot1" },
-      );
+      const transcriptLocator = resolveSessionTranscriptLocator("sess-1", { agentId: "bot1" });
       expect(transcriptLocator).toBe(
         createSqliteSessionTranscriptLocator({ agentId: "bot1", sessionId: "sess-1" }),
       );
@@ -640,32 +634,20 @@ describe("sessions", () => {
     });
   });
 
-  it("keeps matching SQLite transcript locators", () => {
+  it("derives stable matching SQLite transcript locators", () => {
     withStateDir(path.resolve("/different/state"), () => {
       const locator = createSqliteSessionTranscriptLocator({
         agentId: "bot1",
         sessionId: "sess-1",
       });
-      const transcriptLocator = resolveSessionTranscriptLocator(
-        "sess-1",
-        { transcriptLocator: locator },
-        { agentId: "bot1" },
-      );
+      const transcriptLocator = resolveSessionTranscriptLocator("sess-1", { agentId: "bot1" });
       expect(transcriptLocator).toBe(locator);
     });
   });
 
-  it("does not reuse SQLite transcript locators for a different agent", () => {
+  it("does not consult a previous SQLite transcript locator for a different agent", () => {
     withStateDir(path.resolve("/different/state"), () => {
-      const bot2Locator = createSqliteSessionTranscriptLocator({
-        agentId: "bot2",
-        sessionId: "sess-1",
-      });
-      const transcriptLocator = resolveSessionTranscriptLocator(
-        "sess-1",
-        { transcriptLocator: bot2Locator },
-        { agentId: "bot1" },
-      );
+      const transcriptLocator = resolveSessionTranscriptLocator("sess-1", { agentId: "bot1" });
       expect(transcriptLocator).toBe(
         createSqliteSessionTranscriptLocator({ agentId: "bot1", sessionId: "sess-1" }),
       );
