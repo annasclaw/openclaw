@@ -14,8 +14,6 @@ import { listTrajectoryRuntimeEvents } from "./runtime-store.sqlite.js";
 import {
   TRAJECTORY_RUNTIME_EVENT_MAX_BYTES,
   createTrajectoryRuntimeRecorder,
-  resolveTrajectoryPointerOpenFlags,
-  resolveTrajectoryFilePath,
   toTrajectoryToolDefinitions,
 } from "./runtime.js";
 
@@ -86,24 +84,6 @@ function useTempStateDir(): void {
 }
 
 describe("trajectory runtime", () => {
-  it("resolves a session-adjacent trajectory file by default", () => {
-    expect(
-      resolveTrajectoryFilePath({
-        transcriptLocator: "/tmp/session.jsonl",
-        sessionId: "session-1",
-      }),
-    ).toBe("/tmp/session.trajectory.jsonl");
-  });
-
-  it("sanitizes session ids when resolving an override directory", () => {
-    expect(
-      resolveTrajectoryFilePath({
-        env: { OPENCLAW_TRAJECTORY_DIR: "/tmp/traces" },
-        sessionId: "../evil/session",
-      }),
-    ).toBe("/tmp/traces/___evil_session.jsonl");
-  });
-
   it("records sanitized runtime events into the agent database by default", () => {
     useTempStateDir();
     const recorder = createTrajectoryRuntimeRecorder({
@@ -176,7 +156,7 @@ describe("trajectory runtime", () => {
         modelId: "gpt-5.4",
         modelApi: "responses",
         workspaceDir: "/tmp/workspace",
-        runtimeFile: "sqlite:main:trajectory:session-1",
+        runtimeLocator: "sqlite:main:trajectory:session-1",
         eventCount: 2,
       },
     });
@@ -240,16 +220,6 @@ describe("trajectory runtime", () => {
       limitBytes: 900,
     });
     expect(truncated?.data?.droppedEvents).toBeGreaterThan(0);
-  });
-
-  it("keeps pointer write flags usable when O_NOFOLLOW is unavailable", () => {
-    expect(
-      resolveTrajectoryPointerOpenFlags({
-        O_CREAT: 0x01,
-        O_TRUNC: 0x02,
-        O_WRONLY: 0x04,
-      }),
-    ).toBe(0x07);
   });
 
   it("does not record runtime events when explicitly disabled", () => {
