@@ -1,3 +1,4 @@
+import { createSqliteSessionTranscriptLocator } from "../config/sessions/paths.js";
 import { resolveAgentIdFromSessionKey } from "../routing/session-key.js";
 import type { SessionLifecycleEvent } from "../sessions/session-lifecycle-events.js";
 import type { SessionTranscriptUpdate } from "../sessions/transcript-events.js";
@@ -123,7 +124,11 @@ async function handleTranscriptUpdateBroadcast(
   const { entry } = loadSessionEntry(sessionKey);
   const agentId = resolveAgentIdFromSessionKey(sessionKey);
   const messageSeq = entry?.sessionId
-    ? await readSessionMessageCountAsync(entry.sessionId, entry.transcriptLocator, agentId)
+    ? await readSessionMessageCountAsync(
+        entry.sessionId,
+        createSqliteSessionTranscriptLocator({ agentId, sessionId: entry.sessionId }),
+        agentId,
+      )
     : undefined;
   const sessionSnapshot = buildGatewaySessionSnapshot({
     sessionRow: loadGatewaySessionRow(sessionKey, { transcriptUsageMaxBytes: 64 * 1024 }),

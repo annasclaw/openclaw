@@ -1,3 +1,4 @@
+import { createSqliteSessionTranscriptLocator } from "../../config/sessions/paths.js";
 import {
   exportSqliteSessionTranscriptJsonl,
   hasSqliteSessionTranscriptEvents,
@@ -148,7 +149,12 @@ export async function emitResetCommandHooks(params: {
     void (async () => {
       const { transcriptLocator, messages } = await loadBeforeResetTranscript({
         agentId,
-        transcriptLocator: prevEntry?.transcriptLocator,
+        transcriptLocator: prevEntry?.sessionId
+          ? createSqliteSessionTranscriptLocator({
+              agentId,
+              sessionId: prevEntry.sessionId,
+            })
+          : undefined,
         sessionId: prevEntry?.sessionId,
       });
 

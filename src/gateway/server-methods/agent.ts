@@ -1071,8 +1071,6 @@ export const agentHandlers: GatewayRequestHandlers = {
         groupChannel: resolvedGroupChannel,
         space: resolvedGroupSpace,
         ...(pluginOwnerId ? { pluginOwnerId } : {}),
-        transcriptLocator:
-          entry?.sessionId && entry.sessionId !== sessionId ? undefined : entry?.transcriptLocator,
         cliSessionIds: entry?.cliSessionIds,
         cliSessionBindings: entry?.cliSessionBindings,
         claudeCliSessionId: entry?.claudeCliSessionId,

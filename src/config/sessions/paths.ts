@@ -76,13 +76,6 @@ export function resolveSessionTranscriptLocator(
   entry?: { transcriptLocator?: string },
   opts?: SessionTranscriptLocatorOptions,
 ): string {
-  const candidate = entry?.transcriptLocator?.trim();
-  const parsed = candidate ? parseSqliteSessionTranscriptLocator(candidate) : undefined;
-  if (
-    parsed?.sessionId === sessionId &&
-    (!opts?.agentId || parsed.agentId === normalizeAgentId(opts.agentId))
-  ) {
-    return candidate!;
-  }
+  void entry;
   return createSqliteSessionTranscriptLocator({ agentId: opts?.agentId, sessionId });
 }

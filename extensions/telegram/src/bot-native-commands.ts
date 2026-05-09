@@ -184,14 +184,14 @@ async function resolveTelegramCommandTranscriptLocator(params: {
       sessionKey,
     });
     const sessionId = resolved.existing?.sessionId?.trim() || randomUUID();
-    const persisted = await resolveAndPersistSessionTranscriptIdentity({
+    const identity = await resolveAndPersistSessionTranscriptIdentity({
       sessionId,
       sessionKey: resolved.normalizedKey,
       sessionEntry: resolved.existing,
       agentId: params.agentId,
       topicId: params.threadId,
     });
-    return { sessionId, transcriptLocator: persisted.transcriptLocator };
+    return { sessionId, transcriptLocator: identity.transcriptLocator };
   } catch {
     return {};
   }

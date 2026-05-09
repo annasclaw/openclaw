@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { promises as fs } from "node:fs";
 import { isAcpRuntimeSpawnAvailable } from "../acp/runtime/availability.js";
 import { resolveThreadBindingSpawnPolicy } from "../channels/thread-bindings-policy.js";
+import { createSqliteSessionTranscriptLocator } from "../config/sessions/paths.js";
 import type { SessionEntry } from "../config/sessions/types.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import type { SubagentSpawnPreparation } from "../context-engine/types.js";
@@ -421,20 +422,38 @@ async function prepareContextEngineSubagentSpawn(params: {
   try {
     subagentSpawnDeps.ensureContextEnginesInitialized();
     const engine = await subagentSpawnDeps.resolveContextEngine(params.cfg);
+    const parentAgentId = normalizeAgentId(
+      parseAgentSessionKey(params.requesterInternalKey)?.agentId ?? "main",
+    );
+    const childAgentId = normalizeAgentId(
+      parseAgentSessionKey(params.childSessionKey)?.agentId ?? parentAgentId,
+    );
+    const parentSessionId = params.context.parentEntry?.sessionId;
+    const childSessionId =
+      params.context.mode === "fork"
+        ? params.context.forked.sessionId
+        : params.context.childEntry?.sessionId;
     const preparation = await engine.prepareSubagentSpawn?.({
       parentSessionKey: params.requesterInternalKey,
       childSessionKey: params.childSessionKey,
       contextMode: params.context.mode,
-      parentSessionId: params.context.parentEntry?.sessionId,
-      parentTranscriptLocator: params.context.parentEntry?.transcriptLocator,
-      childSessionId:
-        params.context.mode === "fork"
-          ? params.context.forked.sessionId
-          : params.context.childEntry?.sessionId,
+      parentSessionId,
+      parentTranscriptLocator: parentSessionId
+        ? createSqliteSessionTranscriptLocator({
+            agentId: parentAgentId,
+            sessionId: parentSessionId,
+          })
+        : undefined,
+      childSessionId,
       childTranscriptLocator:
         params.context.mode === "fork"
           ? params.context.forked.transcriptLocator
-          : params.context.childEntry?.transcriptLocator,
+          : childSessionId
+            ? createSqliteSessionTranscriptLocator({
+                agentId: childAgentId,
+                sessionId: childSessionId,
+              })
+            : undefined,
       ttlMs: params.runTimeoutSeconds > 0 ? params.runTimeoutSeconds * 1000 : undefined,
     });
     return { status: "ok", preparation };

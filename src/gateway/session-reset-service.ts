@@ -410,8 +410,10 @@ export async function emitGatewayBeforeResetPluginHook(params: {
 
   const sessionKey = params.target.canonicalKey ?? params.key;
   const sessionId = params.entry?.sessionId;
-  const transcriptLocator = params.entry?.transcriptLocator;
   const agentId = normalizeAgentId(params.target.agentId ?? resolveDefaultAgentId(params.cfg));
+  const transcriptLocator = sessionId
+    ? createSqliteSessionTranscriptLocator({ agentId, sessionId })
+    : undefined;
   const workspaceDir = resolveAgentWorkspaceDir(params.cfg, agentId);
   let messages: unknown[] = [];
   try {
@@ -523,6 +525,7 @@ export async function performGatewaySessionReset(params: {
   let oldSessionId: string | undefined;
   let oldTranscriptLocator: string | undefined;
   let resetSourceEntry: SessionEntry | undefined;
+  let nextTranscriptLocator: string | undefined;
   let deleteOldTranscript = false;
   const currentEntry = getSessionEntry({
     agentId: target.agentId,
@@ -548,16 +551,20 @@ export async function performGatewaySessionReset(params: {
     };
     const resolvedModel = resolveSessionModelRef(cfg, resetEntry, sessionAgentId);
     oldSessionId = currentEntry?.sessionId;
-    oldTranscriptLocator = currentEntry?.transcriptLocator;
+    oldTranscriptLocator = oldSessionId
+      ? createSqliteSessionTranscriptLocator({
+          agentId: sessionAgentId,
+          sessionId: oldSessionId,
+        })
+      : undefined;
     const now = Date.now();
     const nextSessionId = randomUUID();
-    const transcriptLocator = createSqliteSessionTranscriptLocator({
+    nextTranscriptLocator = createSqliteSessionTranscriptLocator({
       agentId: sessionAgentId,
       sessionId: nextSessionId,
     });
     const nextEntry: SessionEntry = {
       sessionId: nextSessionId,
-      transcriptLocator,
       updatedAt: now,
       systemSent: false,
       abortedLastRun: false,
@@ -645,6 +652,12 @@ export async function performGatewaySessionReset(params: {
   });
 
   if (!hasSqliteSessionTranscriptEvents({ agentId: target.agentId, sessionId: next.sessionId })) {
+    const transcriptPath =
+      nextTranscriptLocator ??
+      createSqliteSessionTranscriptLocator({
+        agentId: target.agentId,
+        sessionId: next.sessionId,
+      });
     const header = {
       type: "session",
       version: CURRENT_SESSION_VERSION,
@@ -655,7 +668,7 @@ export async function performGatewaySessionReset(params: {
     appendSqliteSessionTranscriptEvent({
       agentId: target.agentId,
       sessionId: next.sessionId,
-      transcriptPath: next.transcriptLocator as string,
+      transcriptPath,
       event: header,
     });
   }

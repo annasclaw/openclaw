@@ -7,10 +7,7 @@ import {
   type SessionHeader,
 } from "../../agents/transcript/session-transcript-contract.js";
 import { derivePromptTokens } from "../../agents/usage.js";
-import {
-  createSqliteSessionTranscriptLocator,
-  isSqliteSessionTranscriptLocator,
-} from "../../config/sessions/paths.js";
+import { createSqliteSessionTranscriptLocator } from "../../config/sessions/paths.js";
 import {
   loadSqliteSessionTranscriptEvents,
   replaceSqliteSessionTranscriptEvents,
@@ -80,10 +77,6 @@ function resolveForkParentTranscriptLocator(
   parentEntry: StoreSessionEntry,
   agentId: string,
 ): string {
-  const transcriptLocator = parentEntry.transcriptLocator?.trim();
-  if (transcriptLocator && isSqliteSessionTranscriptLocator(transcriptLocator)) {
-    return transcriptLocator;
-  }
   return createSqliteSessionTranscriptLocator({ agentId, sessionId: parentEntry.sessionId });
 }
 
@@ -101,7 +94,7 @@ export async function resolveParentForkTokenCountRuntime(params: {
   try {
     const usage = await readLatestRecentSessionUsageFromTranscriptAsync(
       params.parentEntry.sessionId,
-      params.parentEntry.transcriptLocator,
+      undefined,
       params.agentId,
       1024 * 1024,
     );

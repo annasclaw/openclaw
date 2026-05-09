@@ -359,7 +359,6 @@ function buildDashboardSessionKey(agentId: string): string {
 function cloneCheckpointSessionEntry(params: {
   currentEntry: SessionEntry;
   nextSessionId: string;
-  nextTranscriptLocator: string;
   label?: string;
   parentSessionKey?: string;
   totalTokens?: number;
@@ -368,7 +367,6 @@ function cloneCheckpointSessionEntry(params: {
   return {
     ...params.currentEntry,
     sessionId: params.nextSessionId,
-    transcriptLocator: params.nextTranscriptLocator,
     updatedAt: Date.now(),
     systemSent: false,
     abortedLastRun: false,
@@ -399,7 +397,6 @@ function cloneCheckpointSessionEntry(params: {
 
 function ensureSessionTranscriptFile(params: {
   sessionId: string;
-  transcriptLocator?: string;
   agentId: string;
 }): { ok: true; transcriptPath: string } | { ok: false; error: string } {
   try {
@@ -614,7 +611,10 @@ async function handleSessionSend(params: {
   const messageSeq =
     (await readSessionMessageCountAsync(
       entry.sessionId,
-      entry.transcriptLocator,
+      createSqliteSessionTranscriptLocator({
+        agentId: resolveAgentIdFromSessionKey(canonicalKey),
+        sessionId: entry.sessionId,
+      }),
       resolveAgentIdFromSessionKey(canonicalKey),
     )) + 1;
   let sendAcked = false;
@@ -816,9 +816,13 @@ export const sessionsHandlers: GatewayRequestHandlers = {
           previews.push({ key, status: "missing", items: [] });
           continue;
         }
+        const transcriptLocator = createSqliteSessionTranscriptLocator({
+          agentId: target.agentId,
+          sessionId: entry.sessionId,
+        });
         const items = readSessionPreviewItemsFromTranscript(
           entry.sessionId,
-          entry.transcriptLocator,
+          transcriptLocator,
           target.agentId,
           limit,
           maxChars,
@@ -1097,7 +1101,6 @@ export const sessionsHandlers: GatewayRequestHandlers = {
     }
     const ensured = ensureSessionTranscriptFile({
       sessionId: created.entry.sessionId,
-      transcriptLocator: created.entry.transcriptLocator,
       agentId: targetAgentId,
     });
     if (!ensured.ok) {
@@ -1113,24 +1116,8 @@ export const sessionsHandlers: GatewayRequestHandlers = {
       return;
     }
 
-    const createdEntry =
-      created.entry.transcriptLocator === ensured.transcriptPath
-        ? created.entry
-        : {
-            ...created.entry,
-            transcriptLocator: ensured.transcriptPath,
-          };
-    if (createdEntry !== created.entry) {
-      await patchSessionEntry({
-        agentId: target.agentId,
-        sessionKey: target.canonicalKey,
-        fallbackEntry: created.entry,
-        update: (existing) => ({
-          ...existing,
-          transcriptLocator: ensured.transcriptPath,
-        }),
-      });
-    }
+    const createdEntry = created.entry;
+    const createdTranscriptLocator = ensured.transcriptPath;
 
     const initialMessage = resolveOptionalInitialSessionMessage(p);
     let runPayload: Record<string, unknown> | undefined;
@@ -1139,7 +1126,7 @@ export const sessionsHandlers: GatewayRequestHandlers = {
     const messageSeq = initialMessage
       ? (await readSessionMessageCountAsync(
           createdEntry.sessionId,
-          createdEntry.transcriptLocator,
+          createdTranscriptLocator,
           target.agentId,
         )) + 1
       : undefined;
@@ -1209,7 +1196,12 @@ export const sessionsHandlers: GatewayRequestHandlers = {
         cfg,
         sessionKey: canonicalParentSessionKey,
         sessionId: parentEntry?.sessionId,
-        transcriptLocator: parentEntry?.transcriptLocator,
+        transcriptLocator: parentEntry?.sessionId
+          ? createSqliteSessionTranscriptLocator({
+              agentId: parentTarget.agentId,
+              sessionId: parentEntry.sessionId,
+            })
+          : undefined,
         agentId: parentTarget.agentId,
         reason: "new",
         nextSessionId: createdEntry.sessionId,
@@ -1283,7 +1275,6 @@ export const sessionsHandlers: GatewayRequestHandlers = {
     const nextEntry = cloneCheckpointSessionEntry({
       currentEntry: entry,
       nextSessionId: branchedSession.sessionId,
-      nextTranscriptLocator: branchedSession.transcriptLocator,
       label,
       parentSessionKey: canonicalKey,
       totalTokens: checkpoint.tokensBefore,
@@ -1398,7 +1389,6 @@ export const sessionsHandlers: GatewayRequestHandlers = {
     const nextEntry = cloneCheckpointSessionEntry({
       currentEntry: entry,
       nextSessionId: restoredSession.sessionId,
-      nextTranscriptLocator: restoredSession.transcriptLocator,
       totalTokens: checkpoint.tokensBefore,
       preserveCompactionCheckpoints: true,
     });
@@ -1804,7 +1794,12 @@ export const sessionsHandlers: GatewayRequestHandlers = {
         cfg,
         sessionKey: target.canonicalKey ?? key,
         sessionId,
-        transcriptLocator: entry?.transcriptLocator,
+        transcriptLocator: sessionId
+          ? createSqliteSessionTranscriptLocator({
+              agentId: target.agentId,
+              sessionId,
+            })
+          : undefined,
         agentId: target.agentId,
         reason: "deleted",
       });
@@ -1841,9 +1836,13 @@ export const sessionsHandlers: GatewayRequestHandlers = {
       respond(true, { messages: [] }, undefined);
       return;
     }
+    const transcriptLocator = createSqliteSessionTranscriptLocator({
+      agentId: target.agentId,
+      sessionId: entry.sessionId,
+    });
     const { messages } = await readRecentSessionMessagesWithStatsAsync(
       entry.sessionId,
-      entry.transcriptLocator,
+      transcriptLocator,
       {
         agentId: target.agentId,
         maxMessages: limit,
@@ -1890,7 +1889,7 @@ export const sessionsHandlers: GatewayRequestHandlers = {
 
     const transcriptPath = resolveSessionTranscriptCandidates(
       sessionId,
-      entry?.transcriptLocator,
+      undefined,
       target.agentId,
     )[0];
     if (
@@ -1963,9 +1962,6 @@ export const sessionsHandlers: GatewayRequestHandlers = {
             if (result.result?.sessionId && result.result.sessionId !== entryToUpdate.sessionId) {
               entryToUpdate.sessionId = result.result.sessionId;
             }
-            if (result.result?.transcriptLocator) {
-              entryToUpdate.transcriptLocator = result.result.transcriptLocator;
-            }
             delete entryToUpdate.inputTokens;
             delete entryToUpdate.outputTokens;
             if (
@@ -2006,7 +2002,10 @@ export const sessionsHandlers: GatewayRequestHandlers = {
 
     const tail = readRecentSessionTranscriptLines({
       sessionId,
-      transcriptLocator: entry?.transcriptLocator,
+      transcriptLocator: createSqliteSessionTranscriptLocator({
+        agentId: target.agentId,
+        sessionId,
+      }),
       agentId: target.agentId,
       maxLines,
     });
