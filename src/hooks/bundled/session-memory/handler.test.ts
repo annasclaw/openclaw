@@ -92,7 +92,7 @@ function seedSessionTranscript(params: {
   content: string;
   agentId?: string;
 }): string {
-  const transcriptPath =
+  const transcriptLocator =
     params.transcriptLocator ??
     createSqliteSessionTranscriptLocator({
       agentId: params.agentId ?? "main",
@@ -101,11 +101,11 @@ function seedSessionTranscript(params: {
   replaceSqliteSessionTranscriptEvents({
     agentId: params.agentId ?? "main",
     sessionId: params.sessionId,
-    transcriptPath,
+    transcriptPath: transcriptLocator,
     events: parseMockSessionContent(params.content),
     now: () => 1_770_000_000_000,
   });
-  return transcriptPath;
+  return transcriptLocator;
 }
 
 async function runNewWithPreviousSessionEntry(params: {
