@@ -207,7 +207,6 @@ describe("commitment extraction runtime", () => {
       expect.objectContaining({
         provider: "openai-codex",
         model: "gpt-5.5",
-        transcriptLocator: expect.stringMatching(/^sqlite-transcript:\/\/main\/commitments-/),
         disableTools: true,
       }),
     );

@@ -1063,7 +1063,6 @@ export async function createContextEngineAttemptRunner(params: {
     )({
       sessionId,
       sessionKey: params.sessionKey,
-      transcriptLocator,
       workspaceDir,
       agentDir,
       config: {},

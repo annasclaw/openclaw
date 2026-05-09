@@ -9,7 +9,6 @@ function createPreparedRun(overrides: Partial<PreparedAgentRun> = {}): PreparedA
     agentId: "main",
     sessionId: "session-pi-worker",
     sessionKey: "agent:main:thread",
-    transcriptLocator: "sqlite-transcript://main/session-pi-worker",
     workspaceDir: "/tmp/workspace",
     prompt: "hello",
     provider: "openai",

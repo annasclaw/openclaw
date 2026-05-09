@@ -261,14 +261,12 @@ describe("realtime voice agent consult runtime", () => {
     });
     expect(sessionStore["agent:main:subagent:google-meet:meet-1"]).toMatchObject({
       sessionId: "forked-session",
-      transcriptLocator: "sqlite-transcript://main/forked-session",
       spawnedBy: "agent:main:main",
       forkedFromParent: true,
     });
     expect(runEmbeddedPiAgent).toHaveBeenCalledWith(
       expect.objectContaining({
         sessionId: "forked-session",
-        transcriptLocator: "sqlite-transcript://main/forked-session",
         spawnedBy: "agent:main:main",
       }),
     );

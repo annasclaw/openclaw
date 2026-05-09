@@ -220,7 +220,6 @@ async function runLocalRuntimePlanner(
           sessionKey,
           agentId: "crestodian",
           trigger: "manual",
-          transcriptLocator,
           workspaceDir: tempDir,
           config: backend.buildConfig(tempDir),
           prompt: params.prompt,

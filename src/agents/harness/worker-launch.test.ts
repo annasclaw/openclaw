@@ -12,7 +12,6 @@ function createAttempt(
   return {
     sessionId: "session-worker-launch",
     sessionKey: "agent:main:thread",
-    transcriptLocator: "sqlite-transcript://main/session-worker-launch",
     workspaceDir: "/tmp/workspace",
     prompt: "hello",
     timeoutMs: 1000,
@@ -80,7 +79,6 @@ describe("PI run worker launch request", () => {
       {
         sessionId: "session-pi-run",
         sessionKey: "agent:main:thread",
-        transcriptLocator: "sqlite-transcript://main/session-pi-run",
         workspaceDir: "/tmp/workspace",
         prompt: "hello",
         timeoutMs: 1000,

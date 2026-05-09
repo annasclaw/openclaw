@@ -5,7 +5,6 @@ import { isAcpRuntimeSpawnAvailable } from "../../../acp/runtime/availability.js
 import { buildHierarchyReinforcementMessage } from "../../../auto-reply/handoff-summarizer.js";
 import { filterHeartbeatPairs } from "../../../auto-reply/heartbeat-filter.js";
 import { getRuntimeConfig } from "../../../config/config.js";
-import { createSqliteSessionTranscriptLocator } from "../../../config/sessions/paths.js";
 import {
   getSessionEntry,
   listSessionEntries,
@@ -68,7 +67,7 @@ import {
 import {
   FULL_BOOTSTRAP_COMPLETED_CUSTOM_TYPE,
   buildBootstrapContextForFiles,
-  hasCompletedBootstrapTranscriptTurn,
+  hasCompletedBootstrapSessionTurn,
   isWorkspaceBootstrapPending,
   makeBootstrapWarn,
   resolveBootstrapFilesForRun,
@@ -165,9 +164,9 @@ import {
 } from "../../tool-allowlist-guard.js";
 import { UNKNOWN_TOOL_THRESHOLD } from "../../tool-loop-detection.js";
 import { shouldAllowProviderOwnedThinkingReplay } from "../../transcript-policy.js";
-import { repairTranscriptStateIfNeeded } from "../../transcript-state-repair.js";
+import { repairTranscriptSessionStateIfNeeded } from "../../transcript-state-repair.js";
 import { removeSessionManagerTailEntries } from "../../transcript/session-manager-tail.js";
-import { openTranscriptSessionManager } from "../../transcript/session-manager.js";
+import { openTranscriptSessionManagerForSession } from "../../transcript/session-manager.js";
 import { normalizeUsage, type NormalizedUsage } from "../../usage.js";
 import { DEFAULT_BOOTSTRAP_FILENAME } from "../../workspace.js";
 import { isRunnerAbortError } from "../abort.js";
@@ -724,13 +723,6 @@ export async function runEmbeddedAttempt(
     config: params.config,
     agentId: params.agentId,
   });
-  const sqliteTranscriptLocator = createSqliteSessionTranscriptLocator({
-    agentId: sessionAgentId,
-    sessionId: params.sessionId,
-  });
-  if (params.transcriptLocator !== sqliteTranscriptLocator) {
-    params = { ...params, transcriptLocator: sqliteTranscriptLocator };
-  }
   const runArtifactStore = createRunArtifactStoreBestEffort({
     agentId: sessionAgentId,
     runId: params.runId,
@@ -976,8 +968,9 @@ export async function runEmbeddedAttempt(
       bootstrapContextMode: params.bootstrapContextMode,
       bootstrapContextRunKind: params.bootstrapContextRunKind ?? "default",
       bootstrapMode,
-      transcriptLocator: params.transcriptLocator,
-      hasCompletedBootstrapTranscriptTurn,
+      agentId: sessionAgentId,
+      sessionId: params.sessionId,
+      hasCompletedBootstrapSessionTurn,
       resolveBootstrapContextForRun: async () => {
         const bootstrapFiles =
           preloadedBootstrapFiles ??
@@ -1406,12 +1399,13 @@ export async function runEmbeddedAttempt(
     let trajectoryRecorder: ReturnType<typeof createTrajectoryRuntimeRecorder> | null = null;
     let trajectoryEndRecorded = false;
     try {
-      await repairTranscriptStateIfNeeded({
-        transcriptLocator: params.transcriptLocator,
+      await repairTranscriptSessionStateIfNeeded({
+        agentId: sessionAgentId,
+        sessionId: params.sessionId,
         debug: (message) => log.debug(message),
         warn: (message) => log.warn(message),
       });
-      const hadTranscriptLocator = hasSqliteSessionTranscriptEvents({
+      const hadTranscriptEvents = hasSqliteSessionTranscriptEvents({
         agentId: sessionAgentId,
         sessionId: params.sessionId,
       });
@@ -1426,8 +1420,8 @@ export async function runEmbeddedAttempt(
       });
 
       sessionManager = guardSessionManager(
-        openTranscriptSessionManager({
-          transcriptLocator: params.transcriptLocator,
+        openTranscriptSessionManagerForSession({
+          agentId: sessionAgentId,
           sessionId: params.sessionId,
           cwd: effectiveWorkspace,
         }),
@@ -1452,12 +1446,18 @@ export async function runEmbeddedAttempt(
           },
         },
       );
+      const sessionTranscriptLocator = sessionManager.getTranscriptLocator();
+      if (!sessionTranscriptLocator) {
+        throw new Error(
+          `SQLite transcript scope did not produce a runtime transcript handle: agentId=${sessionAgentId} sessionId=${params.sessionId}`,
+        );
+      }
       await runAttemptContextEngineBootstrap({
-        hadTranscriptLocator,
+        hadTranscriptLocator: hadTranscriptEvents,
         contextEngine: activeContextEngine,
         sessionId: params.sessionId,
         sessionKey: params.sessionKey,
-        transcriptLocator: params.transcriptLocator,
+        transcriptLocator: sessionTranscriptLocator,
         sessionManager,
         runtimeContext: buildAfterTurnRuntimeContext({
           attempt: params,
@@ -1745,7 +1745,7 @@ export async function runEmbeddedAttempt(
           contextEngine: activeContextEngine,
           sessionId: params.sessionId,
           sessionKey: params.sessionKey,
-          transcriptLocator: params.transcriptLocator,
+          transcriptLocator: sessionTranscriptLocator,
           tokenBudget: params.contextTokenBudget,
           modelId: params.modelId,
           getPrePromptMessageCount: () => prePromptMessageCount,
@@ -2541,7 +2541,7 @@ export async function runEmbeddedAttempt(
 
       let messagesSnapshot: AgentMessage[] = [];
       let sessionIdUsed = activeSession.sessionId;
-      let transcriptLocatorUsed: string | undefined = params.transcriptLocator;
+      let transcriptLocatorUsed: string | undefined = sessionTranscriptLocator;
       const onAbort = () => {
         externalAbort = true;
         const reason = params.abortSignal ? getAbortReason(params.abortSignal) : undefined;
@@ -2585,7 +2585,7 @@ export async function runEmbeddedAttempt(
               `effectiveReserveTokens=${request.effectiveReserveTokens} ` +
               `prePromptMessageCount=${prePromptMessageCount} ` +
               (extra ? `${extra} ` : "") +
-              `transcriptLocator=${params.transcriptLocator}`,
+              `transcriptLocator=${sessionTranscriptLocator}`,
           );
         };
         if (request.route === "truncate_tool_results_only") {
@@ -2600,7 +2600,7 @@ export async function runEmbeddedAttempt(
             contextWindowTokens: contextTokenBudget,
             maxCharsOverride: toolResultMaxChars,
             agentId: sessionAgentId,
-            transcriptLocator: params.transcriptLocator,
+            transcriptLocator: sessionTranscriptLocator,
             sessionId: params.sessionId,
             sessionKey: params.sessionKey,
           });
@@ -3070,7 +3070,7 @@ export async function runEmbeddedAttempt(
                 `historyImageBlocks=${sessionSummary.totalImageBlocks} ` +
                 `systemPromptChars=${systemLen} promptChars=${promptLen} ` +
                 `promptImages=${imageResult.images.length} ` +
-                `provider=${params.provider}/${params.modelId} transcriptLocator=${params.transcriptLocator}`,
+                `provider=${params.provider}/${params.modelId} transcriptLocator=${sessionTranscriptLocator}`,
             );
           }
 
@@ -3133,7 +3133,7 @@ export async function runEmbeddedAttempt(
               contextWindowTokens: contextTokenBudget,
               maxCharsOverride: toolResultMaxChars,
               agentId: sessionAgentId,
-              transcriptLocator: params.transcriptLocator,
+              transcriptLocator: sessionTranscriptLocator,
               sessionId: params.sessionId,
               sessionKey: params.sessionKey,
             });
@@ -3152,7 +3152,7 @@ export async function runEmbeddedAttempt(
                   `overflowTokens=${preemptiveCompaction.overflowTokens} ` +
                   `toolResultReducibleChars=${preemptiveCompaction.toolResultReducibleChars} ` +
                   `effectiveReserveTokens=${preemptiveCompaction.effectiveReserveTokens} ` +
-                  `transcriptLocator=${params.transcriptLocator}`,
+                  `transcriptLocator=${sessionTranscriptLocator}`,
               );
               skipPromptSubmission = true;
             }
@@ -3160,7 +3160,7 @@ export async function runEmbeddedAttempt(
               log.warn(
                 `[context-overflow-precheck] early tool-result truncation did not help for ` +
                   `${params.provider}/${params.modelId}; falling back to compaction ` +
-                  `reason=${truncationResult.reason ?? "unknown"} transcriptLocator=${params.transcriptLocator}`,
+                  `reason=${truncationResult.reason ?? "unknown"} transcriptLocator=${sessionTranscriptLocator}`,
               );
               preflightRecovery = { route: "compact_only" };
               promptError = new Error(PREEMPTIVE_OVERFLOW_ERROR_TEXT);
@@ -3185,7 +3185,7 @@ export async function runEmbeddedAttempt(
                 `toolResultReducibleChars=${preemptiveCompaction.toolResultReducibleChars} ` +
                 `reserveTokens=${reserveTokens} ` +
                 `effectiveReserveTokens=${preemptiveCompaction.effectiveReserveTokens} ` +
-                `transcriptLocator=${params.transcriptLocator}`,
+                `transcriptLocator=${sessionTranscriptLocator}`,
             );
             skipPromptSubmission = true;
           }
@@ -3453,7 +3453,7 @@ export async function runEmbeddedAttempt(
             yieldAborted,
             sessionIdUsed,
             sessionKey: params.sessionKey,
-            transcriptLocator: params.transcriptLocator,
+            transcriptLocator: sessionTranscriptLocator,
             messagesSnapshot,
             prePromptMessageCount,
             tokenBudget: params.contextTokenBudget,
@@ -3510,7 +3510,7 @@ export async function runEmbeddedAttempt(
             const rotation = await rotateTranscriptAfterCompaction({
               sessionManager,
               agentId: params.agentId,
-              transcriptLocator: params.transcriptLocator,
+              transcriptLocator: sessionTranscriptLocator,
             });
             if (rotation.rotated) {
               sessionIdUsed = rotation.sessionId ?? sessionIdUsed;

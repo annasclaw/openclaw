@@ -166,7 +166,6 @@ describe("runEmbeddedPiAgent overflow compaction trigger routing", () => {
     await runEmbeddedPiAgent({
       sessionId: "test-session",
       sessionKey: "test-key",
-      transcriptLocator: "sqlite-transcript://main/test-session",
       workspaceDir: "/tmp/workspace",
       prompt: "hello",
       timeoutMs: 30000,
@@ -810,7 +809,6 @@ describe("runEmbeddedPiAgent overflow compaction trigger routing", () => {
       2,
       expect.objectContaining({
         sessionId: "rotated-session",
-        transcriptLocator: "sqlite-transcript://main/rotated-session",
       }),
     );
     expect(mockedRunContextEngineMaintenance).toHaveBeenCalledWith(

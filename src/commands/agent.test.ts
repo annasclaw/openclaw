@@ -127,7 +127,6 @@ vi.mock("../agents/command/attempt-execution.runtime.js", () => {
         messageTo: opts.replyTo ?? opts.to,
         messageThreadId: opts.threadId,
         senderIsOwner: opts.senderIsOwner,
-        transcriptLocator: params.transcriptLocator,
         workspaceDir: params.workspaceDir,
         config: params.cfg,
         skillsSnapshot: params.skillsSnapshot,
@@ -702,12 +701,7 @@ describe("agentCommand", () => {
 
       const callArgs = vi.mocked(runEmbeddedPiAgent).mock.calls.at(-1)?.[0];
       expect(callArgs?.sessionId).toBe("session-123");
-      expect(callArgs?.transcriptLocator).toContain(
-        path.join("agents", "main", "sessions", "session-123.jsonl"),
-      );
-      expect(callArgs?.transcriptLocator).not.toContain(
-        `${path.sep}sessions${path.sep}agents${path.sep}main${path.sep}sessions${path.sep}`,
-      );
+      expect(callArgs).not.toHaveProperty("transcriptLocator");
     });
   });
 
@@ -1096,9 +1090,7 @@ describe("agentCommand", () => {
       );
       let callArgs = getLastEmbeddedCall();
       expect(callArgs?.sessionKey).toBe("agent:ops:main");
-      expect(callArgs?.transcriptLocator).toContain(
-        `${path.sep}agents${path.sep}ops${path.sep}sessions`,
-      );
+      expect(callArgs).not.toHaveProperty("transcriptLocator");
       expect(callArgs?.messageChannel).toBe("slack");
       expect(runtime.log).toHaveBeenCalledWith("ok");
 

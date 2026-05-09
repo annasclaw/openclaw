@@ -249,7 +249,6 @@ const runWithOrphanedSingleUserMessage = async (text: string, sessionKey: string
   return await runEmbeddedPiAgent({
     sessionId: sessionIdFromLocator(transcriptLocator),
     sessionKey,
-    transcriptLocator,
     workspaceDir,
     config: cfg,
     prompt: "hello",
@@ -321,7 +320,6 @@ const runDefaultEmbeddedTurn = async (
   await runEmbeddedPiAgent({
     sessionId: sessionIdFromLocator(transcriptLocator),
     sessionKey,
-    transcriptLocator,
     workspaceDir,
     config: cfg,
     prompt,
@@ -349,7 +347,6 @@ describe("runEmbeddedPiAgent", () => {
 
     await runEmbeddedPiAgent({
       sessionId: "dynamic-model",
-      transcriptLocator,
       workspaceDir,
       config: cfg,
       prompt: "hello",
@@ -390,7 +387,6 @@ describe("runEmbeddedPiAgent", () => {
     await runEmbeddedPiAgent({
       sessionId: "resume-123",
       sessionKey: "   ",
-      transcriptLocator,
       workspaceDir,
       config: cfg,
       prompt: "hello",
@@ -430,7 +426,6 @@ describe("runEmbeddedPiAgent", () => {
     await runEmbeddedPiAgent({
       sessionId: "resume-124",
       sessionKey: "   ",
-      transcriptLocator,
       workspaceDir,
       config: cfg,
       prompt: "hello",
@@ -468,7 +463,6 @@ describe("runEmbeddedPiAgent", () => {
 
     await runEmbeddedPiAgent({
       sessionId: "resume-456",
-      transcriptLocator,
       workspaceDir,
       config: cfg,
       prompt: "hello",
@@ -506,7 +500,6 @@ describe("runEmbeddedPiAgent", () => {
     await runEmbeddedPiAgent({
       sessionId: "resume-agent-1",
       sessionKey: undefined,
-      transcriptLocator,
       workspaceDir,
       config: cfg,
       prompt: "hello",
@@ -544,7 +537,6 @@ describe("runEmbeddedPiAgent", () => {
     await runEmbeddedPiAgent({
       sessionId,
       sessionKey,
-      transcriptLocator,
       workspaceDir,
       config: cfg,
       prompt: "hello",
@@ -588,7 +580,6 @@ describe("runEmbeddedPiAgent", () => {
     const result = await runEmbeddedPiAgent({
       sessionId,
       sessionKey,
-      transcriptLocator,
       workspaceDir,
       config: cfg,
       prompt: "hello",
@@ -644,7 +635,6 @@ describe("runEmbeddedPiAgent", () => {
     const result = await runEmbeddedPiAgent({
       sessionId: sessionIdFromLocator(transcriptLocator),
       sessionKey,
-      transcriptLocator,
       workspaceDir,
       config: cfg,
       prompt: "ship it",
@@ -673,7 +663,6 @@ describe("runEmbeddedPiAgent", () => {
       runEmbeddedPiAgent({
         sessionId: sessionIdFromLocator(transcriptLocator),
         sessionKey,
-        transcriptLocator,
         workspaceDir,
         config: cfg,
         prompt: "boom",
