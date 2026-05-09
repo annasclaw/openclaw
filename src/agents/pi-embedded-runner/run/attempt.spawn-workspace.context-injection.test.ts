@@ -11,7 +11,7 @@ import {
 } from "./attempt.context-engine-helpers.js";
 import { resetEmbeddedAttemptHarness } from "./attempt.spawn-workspace.test-support.js";
 
-const TEST_SESSION_FILE = "sqlite-transcript://main/session-context-injection.jsonl";
+const TEST_SESSION_FILE = "sqlite-transcript://main/session-context-injection";
 
 async function resolveBootstrapContext(params: {
   contextInjectionMode?: "always" | "continuation-skip" | "never";

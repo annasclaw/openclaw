@@ -154,7 +154,7 @@ describe("buildExportSessionReply", () => {
     vi.clearAllMocks();
     hoisted.createSqliteSessionTranscriptLocatorMock.mockImplementation(
       ({ agentId, sessionId }: { agentId?: string; sessionId: string }) =>
-        `sqlite-transcript://${agentId ?? "main"}/${sessionId}.jsonl`,
+        `sqlite-transcript://${agentId ?? "main"}/${sessionId}`,
     );
     hoisted.sessionRowsMock.mockReturnValue({
       "agent:target:session": {
@@ -279,7 +279,7 @@ describe("buildExportSessionReply", () => {
     expect(reply.text).toContain("✅ Session exported!");
     expect(hoisted.exportSqliteSessionTranscriptJsonlMock).toHaveBeenCalledWith({
       agentId: "target",
-      transcriptLocator: "sqlite-transcript://target/session-1.jsonl",
+      transcriptLocator: "sqlite-transcript://target/session-1",
       sessionId: "session-1",
     });
     const html = hoisted.writeFileMock.mock.calls[0]?.[1];

@@ -16,7 +16,7 @@ function createParams(overrides: Partial<RunEmbeddedPiAgentParams> = {}): RunEmb
   return {
     sessionId: "session-worker-runner",
     sessionKey: "agent:main:thread",
-    transcriptLocator: "sqlite-transcript://main/session-worker-runner.jsonl",
+    transcriptLocator: "sqlite-transcript://main/session-worker-runner",
     workspaceDir: "/tmp/workspace",
     prompt: "hello",
     timeoutMs: 1000,

@@ -33,7 +33,7 @@ vi.mock("../../infra/session-cost-usage.js", async () => {
     "../../infra/session-cost-usage.js",
   );
   const locator = (agentId: string, sessionId: string) =>
-    `sqlite-transcript://${agentId}/${sessionId}.jsonl`;
+    `sqlite-transcript://${agentId}/${sessionId}`;
   return {
     ...actual,
     discoverAllSessions: vi.fn(async (params?: { agentId?: string }) => {

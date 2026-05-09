@@ -13,7 +13,7 @@ const BASE_PARAMS = {
   sessionKey: "session-1",
   model: "gpt-5.5",
   prompt: "hello",
-  transcriptLocator: "sqlite-transcript://agent-1/session-1.jsonl",
+  transcriptLocator: "sqlite-transcript://agent-1/session-1",
   timeoutMs: 1_000,
   workspaceDir: "/tmp/openclaw-workspace",
 } satisfies RunEmbeddedPiAgentParams;

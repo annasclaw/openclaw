@@ -37,7 +37,7 @@ import { createClaudeApiErrorFixture } from "./test-helpers/claude-api-error-fix
 
 type ProcessSupervisor = ReturnType<typeof getProcessSupervisor>;
 type SupervisorSpawnFn = ProcessSupervisor["spawn"];
-const testTranscriptLocator = (sessionId: string) => `sqlite-transcript://main/${sessionId}.jsonl`;
+const testTranscriptLocator = (sessionId: string) => `sqlite-transcript://main/${sessionId}`;
 
 beforeEach(() => {
   resetAgentEventsForTest();

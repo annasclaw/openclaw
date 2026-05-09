@@ -27,7 +27,7 @@ vi.mock("../../config/sessions/group.js", () => ({
 vi.mock("../../config/sessions/paths.js", () => ({
   createSqliteSessionTranscriptLocator: vi.fn(
     ({ agentId, sessionId }: { agentId?: string; sessionId: string }) =>
-      `sqlite-transcript://${agentId ?? "main"}/${sessionId}.jsonl`,
+      `sqlite-transcript://${agentId ?? "main"}/${sessionId}`,
   ),
 }));
 

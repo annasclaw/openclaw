@@ -450,7 +450,7 @@ describe("subagent-orphan-recovery", () => {
   });
 
   it("includes last human message in resume when available", async () => {
-    mockSingleAbortedSession({ transcriptLocator: "sqlite-transcript://main/session-abc.jsonl" });
+    mockSingleAbortedSession({ transcriptLocator: "sqlite-transcript://main/session-abc" });
 
     vi.mocked(sessionUtils.readSessionMessagesAsync).mockResolvedValue([
       { role: "user", content: [{ type: "text", text: "Please build feature Y" }] },

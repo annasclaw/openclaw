@@ -35,7 +35,7 @@ describe("filterMemorySearchHitsBySessionVisibility", () => {
     const cfg = asOpenClawConfig({ tools: { sessions: { visibility: "all" } } });
     const hits: MemorySearchResult[] = [
       {
-        path: "sessions/u1.jsonl",
+        path: "sessions/main/u1",
         source: "sessions",
         score: 1,
         snippet: "x",
@@ -77,7 +77,7 @@ describe("filterMemorySearchHitsBySessionVisibility", () => {
     const cfg = asOpenClawConfig({ tools: { sessions: { visibility: "all" } } });
     const hits: MemorySearchResult[] = [
       {
-        path: "sessions/w1.jsonl",
+        path: "sessions/peer/w1",
         source: "sessions",
         score: 1,
         snippet: "a",
@@ -85,7 +85,7 @@ describe("filterMemorySearchHitsBySessionVisibility", () => {
         endLine: 2,
       },
       {
-        path: "sessions/w1.jsonl",
+        path: "sessions/peer/w1",
         source: "sessions",
         score: 0.9,
         snippet: "b",
@@ -105,7 +105,7 @@ describe("filterMemorySearchHitsBySessionVisibility", () => {
 
   it("allows cross-agent session hits when visibility=all and agent-to-agent is enabled", async () => {
     const hit: MemorySearchResult = {
-      path: "sessions/w1.jsonl",
+      path: "sessions/peer/w1",
       source: "sessions",
       score: 1,
       snippet: "x",
@@ -129,7 +129,7 @@ describe("filterMemorySearchHitsBySessionVisibility", () => {
 
   it("denies cross-agent session hits when agent-to-agent is disabled", async () => {
     const hit: MemorySearchResult = {
-      path: "sessions/w1.jsonl",
+      path: "sessions/peer/w1",
       source: "sessions",
       score: 1,
       snippet: "x",

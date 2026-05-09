@@ -359,7 +359,7 @@ function resetRunExecutionMocks(): void {
   normalizeVerboseLevelMock.mockImplementation((value: unknown) => value ?? "off");
   createSqliteSessionTranscriptLocatorMock.mockImplementation(
     ({ agentId = "main", sessionId }: { agentId?: string; sessionId: string }) =>
-      `sqlite-transcript://${agentId}/${sessionId}.jsonl`,
+      `sqlite-transcript://${agentId}/${sessionId}`,
   );
   registerAgentRunContextMock.mockReturnValue(undefined);
   runWithModelFallbackMock.mockReset();

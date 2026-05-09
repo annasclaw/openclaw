@@ -17,8 +17,8 @@ let gatewayConfig: {
 };
 let authCheckCalls = 0;
 const transcriptFixtures = vi.hoisted(() => ({
-  sessionOne: "sqlite-transcript://main/session-1.jsonl",
-  otherSession: "sqlite-transcript://main/other-session.jsonl",
+  sessionOne: "sqlite-transcript://main/session-1",
+  otherSession: "sqlite-transcript://main/other-session",
 }));
 
 vi.mock("../config/config.js", () => ({

@@ -36,7 +36,7 @@ import type { MidTurnPrecheckRequest } from "./midturn-precheck.js";
 
 const hoisted = getHoisted();
 const embeddedSessionId = "embedded-session";
-const transcriptLocator = "sqlite-transcript://main/embedded-session.jsonl";
+const transcriptLocator = "sqlite-transcript://main/embedded-session";
 const seedMessage = { role: "user", content: "seed", timestamp: 1 } as AgentMessage;
 const doneMessage = { role: "assistant", content: "done", timestamp: 2 } as unknown as AgentMessage;
 type AfterTurnPromptCacheCall = { runtimeContext?: { promptCache?: Record<string, unknown> } };

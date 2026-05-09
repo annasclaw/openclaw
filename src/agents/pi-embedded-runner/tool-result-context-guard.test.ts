@@ -413,7 +413,7 @@ async function callTransform(
 describe("installContextEngineLoopHook", () => {
   const sessionId = "test-session-id";
   const sessionKey = "agent:main:subagent:test";
-  const transcriptLocator = "sqlite-transcript://main/test-session-id.jsonl";
+  const transcriptLocator = "sqlite-transcript://main/test-session-id";
   const tokenBudget = 4096;
   const modelId = "test-model";
 

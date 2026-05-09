@@ -212,7 +212,7 @@ describe("QmdMemoryManager", () => {
         },
       ],
     });
-    return `sqlite-transcript://${encodeURIComponent(agentId)}/${encodeURIComponent(sessionId)}.jsonl`;
+    return `sqlite-transcript://${encodeURIComponent(agentId)}/${encodeURIComponent(sessionId)}`;
   }
 
   beforeAll(async () => {

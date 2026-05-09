@@ -105,10 +105,10 @@ describe("listSessionTranscriptsForAgent", () => {
     const files = await listSessionTranscriptsForAgent("main");
     const [locator] = files;
 
-    expect(locator).toBe("sqlite-transcript://main/sqlite-only.jsonl");
+    expect(locator).toBe("sqlite-transcript://main/sqlite-only");
     const entry = await buildSessionTranscriptEntry(locator);
     expect(entry?.content).toBe("User: Stored only in SQLite");
-    expect(entry?.path).toBe("sessions/main/sqlite-only.jsonl");
+    expect(entry?.path).toBe("sessions/main/sqlite-only");
   });
 
   it("ignores remembered legacy transcript paths when listing active SQLite transcripts", async () => {
@@ -120,7 +120,7 @@ describe("listSessionTranscriptsForAgent", () => {
     });
 
     await expect(listSessionTranscriptsForAgent("main")).resolves.toEqual([
-      "sqlite-transcript://main/remembered.jsonl",
+      "sqlite-transcript://main/remembered",
     ]);
   });
 });
@@ -131,12 +131,12 @@ describe("sessionPathForTranscript", () => {
       sessionPathForTranscript(
         createSqliteSessionTranscriptRef({ agentId: "main", sessionId: "active-session" }),
       ),
-    ).toBe("sessions/main/active-session.jsonl");
+    ).toBe("sessions/main/active-session");
   });
 
   it("does not preserve legacy filesystem paths as session export identity", () => {
     expect(sessionPathForTranscript(path.join(tmpDir, "loose-session.jsonl"))).toBe(
-      "sessions/unknown.jsonl",
+      "sessions/unknown",
     );
   });
 });

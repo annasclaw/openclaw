@@ -37,17 +37,17 @@ describe("session path safety", () => {
     }
   });
 
-  it("ignores legacy transcriptLocator paths", () => {
+  it("ignores invalid transcript locators", () => {
     const resolved = resolveSessionTranscriptLocator("sess-1", {
-      transcriptLocator: "/tmp/openclaw/agents/work/not-sessions/abc-123.jsonl",
+      transcriptLocator: "not-a-transcript-locator",
     });
     expect(resolved).toBe(createSqliteSessionTranscriptLocator({ sessionId: "sess-1" }));
   });
 
-  it("uses SQLite transcript locators instead of runtime JSONL paths by default", () => {
+  it("uses extensionless SQLite transcript locators by default", () => {
     expect(
       resolveSessionTranscriptLocator("sess-1", {
-        transcriptLocator: "/tmp/openclaw/agents/main/sessions/legacy.jsonl",
+        transcriptLocator: createSqliteSessionTranscriptLocator({ sessionId: "other-session" }),
       }),
     ).toBe(createSqliteSessionTranscriptLocator({ sessionId: "sess-1" }));
   });
@@ -192,18 +192,20 @@ describe("session lifecycle timestamps", () => {
     const previousStateDir = process.env.OPENCLAW_STATE_DIR;
     process.env.OPENCLAW_STATE_DIR = dir;
     try {
-      const sessionsDir = path.join(dir, "agents", "main", "sessions");
-      const transcriptLocator = path.join(sessionsDir, "legacy-session.jsonl");
+      const transcriptLocator = createSqliteSessionTranscriptLocator({
+        agentId: "main",
+        sessionId: "lifecycle-session",
+      });
       const headerTimestamp = "2026-04-20T04:30:00.000Z";
       replaceSqliteSessionTranscriptEvents({
         agentId: "main",
-        sessionId: "legacy-session",
+        sessionId: "lifecycle-session",
         transcriptPath: transcriptLocator,
         events: [
           {
             type: "session",
             version: 3,
-            id: "legacy-session",
+            id: "lifecycle-session",
             timestamp: headerTimestamp,
             cwd: dir,
           },
@@ -213,7 +215,7 @@ describe("session lifecycle timestamps", () => {
       const timestamps = resolveSessionLifecycleTimestamps({
         agentId: "main",
         entry: {
-          sessionId: "legacy-session",
+          sessionId: "lifecycle-session",
           transcriptLocator,
           updatedAt: Date.parse("2026-04-25T08:00:00.000Z"),
         },

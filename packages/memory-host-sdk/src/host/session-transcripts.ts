@@ -12,7 +12,6 @@ import {
   isSilentReplyPayloadText,
   listSqliteSessionTranscripts,
   loadSqliteSessionTranscriptEvents,
-  parseUsageCountedSessionIdFromFileName,
   stripInboundMetadata,
   stripInternalRuntimeContext,
 } from "./openclaw-runtime-session.js";
@@ -159,7 +158,7 @@ export function createSqliteSessionTranscriptRef(params: {
 }): string {
   return `${SQLITE_TRANSCRIPT_REF_PREFIX}${encodeURIComponent(params.agentId)}/${encodeURIComponent(
     params.sessionId,
-  )}.jsonl`;
+  )}`;
 }
 
 export async function listSessionTranscriptsForAgent(agentId: string): Promise<string[]> {
@@ -181,8 +180,7 @@ function parseSqliteSessionTranscriptRef(locator: string): {
   try {
     const url = new URL(locator);
     const agentId = decodeURIComponent(url.hostname).trim();
-    const fileName = decodeURIComponent(url.pathname.replace(/^\/+/u, "")).trim();
-    const sessionId = parseUsageCountedSessionIdFromFileName(fileName);
+    const sessionId = decodeURIComponent(url.pathname.replace(/^\/+/u, "")).trim();
     if (!agentId || !sessionId) {
       return null;
     }
@@ -195,11 +193,9 @@ function parseSqliteSessionTranscriptRef(locator: string): {
 export function sessionPathForTranscript(absPath: string): string {
   const sqliteRef = parseSqliteSessionTranscriptRef(absPath);
   if (sqliteRef) {
-    return path
-      .join("sessions", sqliteRef.agentId, `${sqliteRef.sessionId}.jsonl`)
-      .replace(/\\/g, "/");
+    return path.join("sessions", sqliteRef.agentId, sqliteRef.sessionId).replace(/\\/g, "/");
   }
-  return path.join("sessions", "unknown.jsonl").replace(/\\/g, "/");
+  return path.join("sessions", "unknown").replace(/\\/g, "/");
 }
 
 export function resolveSessionTranscriptScope(locator: string): {

@@ -43,7 +43,7 @@ const sessionParams = {
   sessionIdUsed: "session-1",
   sessionId: "session-1",
   sessionKey: "agent:main",
-  transcriptLocator: "sqlite-transcript://main/session-1.jsonl",
+  transcriptLocator: "sqlite-transcript://main/session-1",
 };
 
 describe("harness context engine lifecycle", () => {

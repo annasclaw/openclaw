@@ -488,7 +488,8 @@ describe("registerTelegramNativeCommands — session metadata", () => {
       .mockClear()
       .mockImplementation(async (params) => {
         const transcriptLocator =
-          params.fallbackTranscriptLocator ?? `/tmp/openclaw-sessions/${params.sessionId}.jsonl`;
+          params.fallbackTranscriptLocator ??
+          `sqlite-transcript://${params.agentId ?? "main"}/${params.sessionId}`;
         return {
           transcriptLocator,
           sessionEntry: {
@@ -1204,14 +1205,14 @@ describe("registerTelegramNativeCommands — session metadata", () => {
       expect.objectContaining({
         sessionId: "sess-topic",
         sessionKey: "agent:main:telegram:group:-1001234567890:topic:42",
-        fallbackTranscriptLocator: "sqlite-transcript://main/sess-topic-topic-42.jsonl",
+        fallbackTranscriptLocator: "sqlite-transcript://main/sess-topic?topic=42",
       }),
     );
     expect(pluginRuntimeMocks.executePluginCommand).toHaveBeenCalledWith(
       expect.objectContaining({
         sessionKey: "agent:main:telegram:group:-1001234567890:topic:42",
         sessionId: "sess-topic",
-        transcriptLocator: "sqlite-transcript://main/sess-topic-topic-42.jsonl",
+        transcriptLocator: "sqlite-transcript://main/sess-topic?topic=42",
         messageThreadId: 42,
       }),
     );

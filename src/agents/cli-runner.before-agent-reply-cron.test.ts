@@ -61,7 +61,7 @@ const baseRunParams = {
   sessionId: "test-session",
   sessionKey: "test-session-key",
   agentId: "main",
-  transcriptLocator: "sqlite-transcript://main/test-session.jsonl",
+  transcriptLocator: "sqlite-transcript://main/test-session",
   workspaceDir: "/tmp/test-workspace",
   prompt: "__openclaw_memory_core_short_term_promotion_dream__",
   provider: "codex-cli",

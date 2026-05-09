@@ -10,7 +10,7 @@ import {
 import type { EmbeddedRunAttemptResult } from "./run/types.js";
 
 let runEmbeddedPiAgent: typeof import("./run.js").runEmbeddedPiAgent;
-const TEST_SESSION_FILE = "sqlite-transcript://main/test-session.jsonl";
+const TEST_SESSION_FILE = "sqlite-transcript://main/test-session";
 
 function makeAssistantMessage(
   overrides: Partial<AssistantMessage> = {},
