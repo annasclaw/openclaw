@@ -1125,7 +1125,7 @@ describe("CodexAppServerEventProjector", () => {
       expect.objectContaining({
         messageCount: 1,
         transcriptLocator: expect.stringMatching(
-          /^sqlite-transcript:\/\/main\/session-1-.+\.jsonl$/u,
+          /^sqlite-transcript:\/\/main\/(?!.*\.jsonl(?:$|\?))session-1-.+$/u,
         ),
         messages: [expect.objectContaining({ role: "assistant" })],
       }),
@@ -1139,7 +1139,7 @@ describe("CodexAppServerEventProjector", () => {
         messageCount: 1,
         compactedCount: -1,
         transcriptLocator: expect.stringMatching(
-          /^sqlite-transcript:\/\/main\/session-1-.+\.jsonl$/u,
+          /^sqlite-transcript:\/\/main\/(?!.*\.jsonl(?:$|\?))session-1-.+$/u,
         ),
       }),
       expect.objectContaining({

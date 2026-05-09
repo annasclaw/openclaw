@@ -262,7 +262,9 @@ describe("generateVoiceResponse", () => {
         agentId: "main",
         sandboxSessionKey: "agent:main:voice:15550001111",
         workspaceDir: "/tmp/openclaw/workspace/main",
-        transcriptLocator: expect.stringMatching(/^sqlite-transcript:\/\/main\/.+\.jsonl$/),
+        transcriptLocator: expect.stringMatching(
+          /^sqlite-transcript:\/\/main\/(?!.*\.jsonl(?:$|\?))[^/?]+$/,
+        ),
       }),
     );
   });
@@ -300,7 +302,9 @@ describe("generateVoiceResponse", () => {
         agentId: "voice",
         sandboxSessionKey: "agent:voice:voice:15550001111",
         workspaceDir: "/tmp/openclaw/workspace/voice",
-        transcriptLocator: expect.stringMatching(/^sqlite-transcript:\/\/voice\/.+\.jsonl$/),
+        transcriptLocator: expect.stringMatching(
+          /^sqlite-transcript:\/\/voice\/(?!.*\.jsonl(?:$|\?))[^/?]+$/,
+        ),
       }),
     );
   });
