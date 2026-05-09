@@ -423,7 +423,13 @@ test("sessions.reset preserves spawned session ownership metadata", async () => 
   expect(reset.payload?.entry.label).toBe("owned child");
 
   const stored = getSessionEntry({ agentId: "main", sessionKey: "agent:main:subagent:child" });
-  expect(stored?.transcriptLocator).toBe(reset.payload?.entry.transcriptLocator);
+  expect(reset.payload?.entry.transcriptLocator).toBe(
+    createSqliteSessionTranscriptLocator({
+      agentId: "main",
+      sessionId: resetSessionId ?? "",
+    }),
+  );
+  expect(stored).not.toHaveProperty("transcriptLocator");
   expect(stored?.chatType).toBe("group");
   expect(stored?.channel).toBe("discord");
   expect(stored?.groupId).toBe("group-1");
