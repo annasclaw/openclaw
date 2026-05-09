@@ -1,5 +1,4 @@
 import { randomUUID } from "node:crypto";
-import path from "node:path";
 import {
   createSqliteSessionTranscriptLocator,
   isSqliteSessionTranscriptLocator,
@@ -56,7 +55,12 @@ type SqliteTranscriptRecord = {
 
 function normalizeTranscriptLocator(transcriptLocator: string): string {
   const trimmed = transcriptLocator.trim();
-  return isSqliteSessionTranscriptLocator(trimmed) ? trimmed : path.resolve(trimmed);
+  if (isSqliteSessionTranscriptLocator(trimmed)) {
+    return trimmed;
+  }
+  throw new Error(
+    `Transcript locator must be SQLite-backed: ${trimmed}. Run "openclaw doctor --fix" to import legacy transcript files.`,
+  );
 }
 
 function createTranscriptLocator(header: SessionHeader, agentId = DEFAULT_AGENT_ID): string {
@@ -113,16 +117,8 @@ function loadTranscriptState(params: {
   state: TranscriptState;
   scope: TranscriptSqliteScope;
 } {
-  const transcriptLocator = params.transcriptLocator.trim();
-  const transcriptPath = isSqliteSessionTranscriptLocator(transcriptLocator)
-    ? transcriptLocator
-    : path.resolve(transcriptLocator);
+  const transcriptPath = normalizeTranscriptLocator(params.transcriptLocator);
   const existingScope = resolveSqliteSessionTranscriptScopeForPath({ transcriptPath });
-  if (!isSqliteSessionTranscriptLocator(transcriptPath) && !existingScope) {
-    throw new Error(
-      `Legacy transcript has not been imported into SQLite: ${transcriptPath}. Run "openclaw doctor --fix" to build the session database.`,
-    );
-  }
   const sessionId = existingScope?.sessionId ?? params.sessionId;
   if (!sessionId) {
     throw new Error(`SQLite transcript scope is missing session id for: ${transcriptPath}`);
@@ -179,7 +175,7 @@ function extractTextContent(message: { content: unknown }): string {
 }
 
 function buildSessionInfoFromState(
-  filePath: string,
+  transcriptLocator: string,
   state: TranscriptState,
   modifiedFallback: Date,
 ): SessionInfo | null {
@@ -225,7 +221,7 @@ function buildSessionInfoFromState(
     }
     const headerTime = Date.parse(header.timestamp);
     return {
-      path: filePath,
+      path: transcriptLocator,
       id: header.id,
       cwd: header.cwd,
       name: state.getSessionName(),
@@ -359,20 +355,20 @@ export class TranscriptSessionManager implements SessionManager {
     return TranscriptSessionManager.create(cwd);
   }
 
-  static forkFrom(sourcePath: string, targetCwd: string): TranscriptSessionManager {
-    const sourceFile = normalizeTranscriptLocator(sourcePath);
-    const sourceScope = resolveSqliteSessionTranscriptScopeForPath({ transcriptPath: sourceFile });
+  static forkFrom(sourceTranscriptLocator: string, targetCwd: string): TranscriptSessionManager {
+    const sourceTranscript = normalizeTranscriptLocator(sourceTranscriptLocator);
+    const sourceScope = resolveSqliteSessionTranscriptScopeForPath({
+      transcriptPath: sourceTranscript,
+    });
     if (!sourceScope) {
-      throw new Error(
-        `Legacy transcript has not been imported into SQLite: ${sourceFile}. Run "openclaw doctor --fix" to build the session database.`,
-      );
+      throw new Error(`SQLite transcript is missing from the state database: ${sourceTranscript}`);
     }
     const sourceState = createTranscriptStateFromEvents(
       loadSqliteSessionTranscriptEvents(sourceScope).map((entry) => entry.event),
     );
     const header = createSessionHeader({
       cwd: targetCwd,
-      parentSession: sourceFile,
+      parentSession: sourceTranscript,
     });
     const transcriptLocator = createTranscriptLocator(header, sourceScope.agentId);
     const state = new TranscriptState({ header, entries: sourceState.getEntries() });
@@ -392,14 +388,14 @@ export class TranscriptSessionManager implements SessionManager {
   }
 
   static async listAll(onProgress?: SessionListProgress): Promise<SessionInfo[]> {
-    const files = listSqliteTranscriptRecords();
+    const records = listSqliteTranscriptRecords();
     const sessions: SessionInfo[] = [];
     let loaded = 0;
-    for (const file of files) {
-      const state = loadTranscriptStateForRecord(file);
+    for (const record of records) {
+      const state = loadTranscriptStateForRecord(record);
       loaded += 1;
-      onProgress?.(loaded, files.length);
-      const info = buildSessionInfoFromState(file.path, state, new Date(file.updatedAt));
+      onProgress?.(loaded, records.length);
+      const info = buildSessionInfoFromState(record.path, state, new Date(record.updatedAt));
       if (info) {
         sessions.push(info);
       }
@@ -636,8 +632,8 @@ export const SessionManagerValue = {
   },
   continueRecent: (cwd: string) => TranscriptSessionManager.continueRecent(cwd),
   inMemory: (cwd?: string) => TranscriptSessionManager.inMemory(cwd),
-  forkFrom: (sourcePath: string, targetCwd: string) =>
-    TranscriptSessionManager.forkFrom(sourcePath, targetCwd),
+  forkFrom: (sourceTranscriptLocator: string, targetCwd: string) =>
+    TranscriptSessionManager.forkFrom(sourceTranscriptLocator, targetCwd),
   list: (cwd: string, onProgress?: SessionListProgress) =>
     TranscriptSessionManager.list(cwd, onProgress),
   listAll: (onProgress?: SessionListProgress) => TranscriptSessionManager.listAll(onProgress),

@@ -70,7 +70,7 @@ describe("TranscriptSessionManager", () => {
     ]);
   });
 
-  it("rejects an unmigrated explicit legacy transcript locator", async () => {
+  it("rejects filesystem transcript locators at runtime", async () => {
     const transcriptLocator = await makeTempTranscriptLocator();
 
     expect(() =>
@@ -79,10 +79,10 @@ describe("TranscriptSessionManager", () => {
         sessionId: "session-1",
         cwd: "/tmp/workspace",
       }),
-    ).toThrow(/Legacy transcript has not been imported into SQLite/);
+    ).toThrow(/Transcript locator must be SQLite-backed/);
   });
 
-  it("rejects runtime writes to unmigrated legacy transcript locators", async () => {
+  it("rejects runtime writes to filesystem transcript locators", async () => {
     const transcriptLocator = await makeTempTranscriptLocator();
 
     expect(() =>
@@ -95,7 +95,7 @@ describe("TranscriptSessionManager", () => {
           cwd: "/tmp/workspace",
         },
       ]),
-    ).toThrow(/Legacy transcript has not been imported into SQLite/);
+    ).toThrow(/Transcript locator must be SQLite-backed/);
   });
 
   it("opens virtual sqlite transcript locators without resolving them as filesystem paths", async () => {

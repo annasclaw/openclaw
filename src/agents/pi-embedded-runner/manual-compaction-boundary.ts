@@ -80,7 +80,7 @@ export async function hardenManualCompactionBoundary(params: {
   });
   if (!scope) {
     throw new Error(
-      `Legacy transcript has not been imported into SQLite: ${params.transcriptLocator}. Run "openclaw doctor --fix" to build the session database.`,
+      `SQLite transcript is missing from the state database: ${params.transcriptLocator}. Run "openclaw doctor --fix" if legacy transcript files still need import.`,
     );
   }
   const events = loadSqliteSessionTranscriptEvents(scope).map((entry) => entry.event);
