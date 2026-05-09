@@ -304,7 +304,6 @@ export const handleUsageCommand: CommandHandler = async (params, allowTextComman
     const sessionSummary = await loadSessionCostSummary({
       sessionId: targetSessionEntry?.sessionId,
       sessionEntry: targetSessionEntry,
-      transcriptLocator: targetSessionEntry?.transcriptLocator,
       config: params.cfg,
       agentId: sessionAgentId,
     });

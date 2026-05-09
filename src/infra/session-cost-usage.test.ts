@@ -120,7 +120,12 @@ describe("session cost usage", () => {
       const sessions = await discoverAllSessions();
       expect(sessions).toHaveLength(1);
       expect(sessions[0]?.sessionId).toBe("sess-discover");
-      expect(sessions[0]?.transcriptLocator.endsWith("sess-discover.jsonl")).toBe(true);
+      expect(sessions[0]?.transcriptLocator).toBe(
+        createSqliteSessionTranscriptLocator({
+          agentId: "main",
+          sessionId: "sess-discover",
+        }),
+      );
     });
   });
 

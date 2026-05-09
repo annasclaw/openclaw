@@ -271,13 +271,11 @@ function getRememberedTranscriptPath(agentId: string, sessionId: string): string
 function resolveSyntheticTranscriptLocator(params: {
   agentId: string;
   sessionId: string;
-  sessionEntry?: SessionEntry;
   transcriptLocator?: string;
   rememberedPath?: string;
 }): string {
   return (
     params.transcriptLocator ??
-    params.sessionEntry?.transcriptLocator ??
     params.rememberedPath ??
     createSqliteSessionTranscriptLocator({ agentId: params.agentId, sessionId: params.sessionId })
   );
@@ -304,7 +302,6 @@ function resolveUsageSessionScope(params: {
       transcriptLocator: resolveSyntheticTranscriptLocator({
         agentId,
         sessionId: explicitSessionId,
-        sessionEntry: params.sessionEntry,
         transcriptLocator: params.transcriptLocator,
         rememberedPath: getRememberedTranscriptPath(agentId, explicitSessionId),
       }),
@@ -319,7 +316,6 @@ function resolveUsageSessionScope(params: {
         ...scope,
         transcriptLocator: resolveSyntheticTranscriptLocator({
           ...scope,
-          sessionEntry: params.sessionEntry,
           transcriptLocator: params.transcriptLocator,
         }),
       };

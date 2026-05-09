@@ -4,6 +4,7 @@ import path from "node:path";
 import { DELIVERY_NO_REPLY_RUNTIME_CONTRACT } from "openclaw/plugin-sdk/agent-runtime-test-contracts";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { OpenClawConfig } from "../../config/config.js";
+import { createSqliteSessionTranscriptLocator } from "../../config/sessions/paths.js";
 import type { SessionEntry } from "../../config/sessions/types.js";
 import type { FollowupRun, QueueSettings } from "./queue.js";
 
@@ -84,12 +85,7 @@ async function incrementRunCompactionCountForFollowupTest(
   };
   if (newSessionId && newSessionId !== entry.sessionId) {
     nextEntry.sessionId = newSessionId;
-    if (entry.transcriptLocator?.trim()) {
-      nextEntry.transcriptLocator = path.join(
-        path.dirname(entry.transcriptLocator),
-        `${newSessionId}.jsonl`,
-      );
-    }
+    delete nextEntry.transcriptLocator;
   }
   const promptTokens =
     (lastCallUsage?.input ?? 0) +
@@ -689,10 +685,8 @@ describe("createFollowupRunner compaction", () => {
   });
 
   it("tracks auto-compaction from embedded result metadata even when no compaction event is emitted", async () => {
-    const sessionsDir = await fs.mkdtemp(path.join(tmpdir(), "openclaw-compaction-meta-"));
     const sessionEntry: SessionEntry = {
       sessionId: "session",
-      transcriptLocator: path.join(sessionsDir, "session.jsonl"),
       updatedAt: Date.now(),
     };
     const sessionStore: Record<string, SessionEntry> = {
@@ -735,16 +729,20 @@ describe("createFollowupRunner compaction", () => {
     expect(firstCall?.[0]?.text).toContain("Auto-compaction complete");
     expect(sessionStore.main.compactionCount).toBe(2);
     expect(sessionStore.main.sessionId).toBe("session-rotated");
-    expect(await normalizeComparablePath(sessionStore.main.transcriptLocator ?? "")).toBe(
-      await normalizeComparablePath(path.join(sessionsDir, "session-rotated.jsonl")),
-    );
+    expect(sessionStore.main).not.toHaveProperty("transcriptLocator");
   });
 
   it("refreshes queued followup runs to the rotated transcript", async () => {
-    const sessionsDir = await fs.mkdtemp(path.join(tmpdir(), "openclaw-compaction-queue-"));
+    const initialTranscriptLocator = createSqliteSessionTranscriptLocator({
+      agentId: "agent",
+      sessionId: "session",
+    });
+    const rotatedTranscriptLocator = createSqliteSessionTranscriptLocator({
+      agentId: "agent",
+      sessionId: "session-rotated",
+    });
     const sessionEntry: SessionEntry = {
       sessionId: "session",
-      transcriptLocator: path.join(sessionsDir, "session.jsonl"),
       updatedAt: Date.now(),
     };
     const sessionStore: Record<string, SessionEntry> = {
@@ -757,6 +755,7 @@ describe("createFollowupRunner compaction", () => {
       meta: {
         agentMeta: {
           sessionId: "session-rotated",
+          transcriptLocator: rotatedTranscriptLocator,
           compactionCount: 1,
           lastCallUsage: { input: 10_000, output: 3_000, total: 13_000 },
         },
@@ -777,7 +776,7 @@ describe("createFollowupRunner compaction", () => {
       prompt: "next",
       run: {
         sessionId: "session",
-        transcriptLocator: path.join(sessionsDir, "session.jsonl"),
+        transcriptLocator: initialTranscriptLocator,
       },
     });
     const queueSettings: QueueSettings = { mode: "queue" };
@@ -787,16 +786,14 @@ describe("createFollowupRunner compaction", () => {
       run: {
         verboseLevel: "on",
         sessionId: "session",
-        transcriptLocator: path.join(sessionsDir, "session.jsonl"),
+        transcriptLocator: initialTranscriptLocator,
       },
     });
 
     await runner(current);
 
     expect(queuedNext.run.sessionId).toBe("session-rotated");
-    expect(await normalizeComparablePath(queuedNext.run.transcriptLocator)).toBe(
-      await normalizeComparablePath(path.join(sessionsDir, "session-rotated.jsonl")),
-    );
+    expect(queuedNext.run.transcriptLocator).toBe(rotatedTranscriptLocator);
   });
 
   it("does not count failed compaction end events in followup runs", async () => {

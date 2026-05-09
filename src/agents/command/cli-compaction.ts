@@ -1,3 +1,4 @@
+import { createSqliteSessionTranscriptLocator } from "../../config/sessions/paths.js";
 import type { SessionEntry } from "../../config/sessions/types.js";
 import type { AgentCompactionMode } from "../../config/types.agent-defaults.js";
 import type { OpenClawConfig } from "../../config/types.openclaw.js";
@@ -194,11 +195,14 @@ export async function runCliTurnCompactionLifecycle(params: {
   thinkLevel?: Parameters<typeof buildEmbeddedCompactionRuntimeContext>[0]["thinkLevel"];
   extraSystemPrompt?: string;
 }): Promise<SessionEntry | undefined> {
-  const transcriptLocator = params.sessionEntry?.transcriptLocator;
   const contextTokenBudget = resolvePositiveInteger(params.sessionEntry?.contextTokens);
-  if (!transcriptLocator || !contextTokenBudget) {
+  if (!params.sessionEntry?.sessionId || !contextTokenBudget) {
     return params.sessionEntry;
   }
+  const transcriptLocator = createSqliteSessionTranscriptLocator({
+    agentId: params.sessionAgentId,
+    sessionId: params.sessionEntry.sessionId,
+  });
 
   const contextEngine = await cliCompactionDeps.resolveContextEngine(params.cfg);
   const transcriptState = await cliCompactionDeps.readTranscriptState(transcriptLocator);

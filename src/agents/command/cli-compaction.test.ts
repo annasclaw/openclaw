@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createSqliteSessionTranscriptLocator } from "../../config/sessions/paths.js";
 import { upsertSessionEntry } from "../../config/sessions/store.js";
 import { replaceSqliteSessionTranscriptEvents } from "../../config/sessions/transcript-store.sqlite.js";
 import type { SessionEntry } from "../../config/sessions/types.js";
@@ -99,12 +100,15 @@ describe("runCliTurnCompactionLifecycle", () => {
     const sessionKey = "agent:main:cli";
     const sessionId = "session-cli";
     const transcriptLocator = path.join(tmpDir, "session.jsonl");
+    const sqliteTranscriptLocator = createSqliteSessionTranscriptLocator({
+      agentId: "main",
+      sessionId,
+    });
     await writeTranscriptLocator({ transcriptLocator, sessionId });
 
     const sessionEntry: SessionEntry = {
       sessionId,
       updatedAt: Date.now(),
-      transcriptLocator,
       contextTokens: 1_000,
       totalTokens: 950,
       totalTokensFresh: true,
@@ -158,7 +162,7 @@ describe("runCliTurnCompactionLifecycle", () => {
     expect(compactCalls[0]).toMatchObject({
       sessionId,
       sessionKey,
-      transcriptLocator,
+      transcriptLocator: sqliteTranscriptLocator,
       tokenBudget: 1_000,
       currentTokenCount: 950,
       force: true,
@@ -169,7 +173,7 @@ describe("runCliTurnCompactionLifecycle", () => {
         reason: "compaction",
         sessionId,
         sessionKey,
-        transcriptLocator,
+        transcriptLocator: sqliteTranscriptLocator,
       }),
     );
     expect(updatedEntry?.compactionCount).toBe(1);

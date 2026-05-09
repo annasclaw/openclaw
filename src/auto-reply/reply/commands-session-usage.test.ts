@@ -142,13 +142,11 @@ describe("handleUsageCommand", () => {
     const params = buildUsageParams();
     params.sessionEntry = {
       sessionId: "wrapper-session",
-      transcriptLocator: "sqlite-transcript://main/wrapper-session",
       updatedAt: Date.now(),
     };
     params.sessionStore = {
       [params.sessionKey]: {
         sessionId: "target-session",
-        transcriptLocator: "sqlite-transcript://main/target-session",
         updatedAt: Date.now(),
       },
     };
@@ -157,9 +155,13 @@ describe("handleUsageCommand", () => {
 
     expect(loadSessionCostSummaryMock).toHaveBeenCalledWith(
       expect.objectContaining({
+        agentId: "target",
         sessionId: "target-session",
-        transcriptLocator: "sqlite-transcript://main/target-session",
       }),
+    );
+    expect(loadSessionCostSummaryMock.mock.calls[0]?.[0]).not.toHaveProperty("transcriptLocator");
+    expect(loadSessionCostSummaryMock.mock.calls[0]?.[0]?.sessionEntry).not.toHaveProperty(
+      "transcriptLocator",
     );
   });
 

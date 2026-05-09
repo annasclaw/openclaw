@@ -1672,7 +1672,7 @@ export async function runReplyAgent(params: {
           key: queueKey,
           previousSessionId,
           nextSessionId: refreshedSessionEntry.sessionId,
-          nextTranscriptLocator: refreshedSessionEntry.transcriptLocator,
+          nextTranscriptLocator: runResult.meta?.agentMeta?.transcriptLocator,
         });
       }
 
