@@ -12,6 +12,7 @@ export function resolveSessionTranscriptCandidates(
   sessionId: string,
   transcriptLocator?: string,
   agentId?: string,
+  topicId?: string | number,
 ): string[] {
   const candidates: string[] = [];
   const pushCandidate = (resolve: () => string): void => {
@@ -28,7 +29,7 @@ export function resolveSessionTranscriptCandidates(
   }
 
   if (agentId) {
-    pushCandidate(() => createSqliteSessionTranscriptLocator({ sessionId, agentId }));
+    pushCandidate(() => createSqliteSessionTranscriptLocator({ sessionId, agentId, topicId }));
   }
 
   return Array.from(new Set(candidates));
@@ -38,6 +39,7 @@ export function resolveStableSessionEndTranscript(params: {
   sessionId: string;
   transcriptLocator?: string;
   agentId?: string;
+  topicId?: string | number;
 }): { transcriptLocator?: string } {
   const stableLocator = normalizeTranscriptLocator(params.transcriptLocator);
   if (stableLocator) {
@@ -48,6 +50,7 @@ export function resolveStableSessionEndTranscript(params: {
     params.sessionId,
     params.transcriptLocator,
     params.agentId,
+    params.topicId,
   );
   return candidate ? { transcriptLocator: candidate } : {};
 }

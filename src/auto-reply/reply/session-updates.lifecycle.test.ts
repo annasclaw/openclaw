@@ -30,8 +30,7 @@ async function createFixture() {
   }
   process.env.OPENCLAW_STATE_DIR = root;
   const sessionKey = "agent:main:forum:direct:compaction";
-  const transcriptPath = path.join(root, "transcripts", "s1.jsonl");
-  await fs.mkdir(path.dirname(transcriptPath), { recursive: true });
+  const transcriptPath = createSqliteSessionTranscriptLocator({ agentId: "main", sessionId: "s1" });
   replaceSqliteSessionTranscriptEvents({
     agentId: "main",
     sessionId: "s1",
@@ -40,7 +39,6 @@ async function createFixture() {
   });
   const entry = {
     sessionId: "s1",
-    transcriptLocator: transcriptPath,
     updatedAt: Date.now(),
     compactionCount: 0,
   } as SessionEntry;
@@ -132,7 +130,7 @@ describe("session-updates lifecycle hooks", () => {
     });
   });
 
-  it("keeps SQLite transcript locators virtual when compaction rotates topic sessions", async () => {
+  it("keeps topic compaction identity out of active session rows", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-session-updates-sqlite-"));
     tempDirs.push(root);
     if (!previousStateDirCaptured) {
@@ -154,7 +152,6 @@ describe("session-updates lifecycle hooks", () => {
     });
     const entry = {
       sessionId: "s1",
-      transcriptLocator,
       updatedAt: Date.now(),
       compactionCount: 0,
     } as SessionEntry;
@@ -172,14 +169,8 @@ describe("session-updates lifecycle hooks", () => {
       newSessionId: "s2",
     });
 
-    const expectedNextFile = createSqliteSessionTranscriptLocator({
-      agentId: "main",
-      sessionId: "s2",
-      topicId: 456,
-    });
-    expect(sessionStore[sessionKey]?.transcriptLocator).toBe(expectedNextFile);
-    expect(sessionStore[sessionKey]?.transcriptLocator).toContain("sqlite-transcript://");
-    expect(sessionStore[sessionKey]?.transcriptLocator).not.toMatch(/^sqlite-transcript:\/[^/]/u);
+    expect(sessionStore[sessionKey]?.sessionId).toBe("s2");
+    expect(sessionStore[sessionKey]?.transcriptLocator).toBeUndefined();
     const [endEvent] = hookRunnerMocks.runSessionEnd.mock.calls[0] ?? [];
     expect(endEvent?.transcriptLocator).toBe(transcriptLocator);
   });

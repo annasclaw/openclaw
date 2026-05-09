@@ -90,7 +90,6 @@ export async function resetReplyRunSession(params: {
     sessionId: nextSessionId,
     agentId,
   });
-  nextEntry.transcriptLocator = nextTranscriptLocator;
   if (params.activeSessionStore) {
     params.activeSessionStore[params.sessionKey] = nextEntry;
   }
@@ -112,7 +111,6 @@ export async function resetReplyRunSession(params: {
   await replayRecentUserAssistantMessages({
     sourceAgentId: agentId,
     sourceSessionId: prevEntry.sessionId,
-    sourceTranscript: prevEntry.transcriptLocator,
     targetAgentId: agentId,
     targetTranscript: nextTranscriptLocator,
     newSessionId: nextSessionId,

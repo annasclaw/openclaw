@@ -53,7 +53,7 @@ const sessionMocks = vi.hoisted(() => {
       Object.entries(sessionStore.value).map(([sessionKey, entry]) => ({ sessionKey, entry })),
     ),
     recordSessionMetaFromInbound: vi.fn(),
-    resolveAndPersistSessionTranscriptLocator: vi.fn(),
+    resolveAndPersistSessionTranscriptIdentity: vi.fn(),
     sessionStore,
   };
 });
@@ -160,8 +160,8 @@ vi.mock("openclaw/plugin-sdk/session-store-runtime", async () => {
     ...actual,
     getSessionEntry: sessionMocks.getSessionEntry,
     listSessionEntries: sessionMocks.listSessionEntries,
-    resolveAndPersistSessionTranscriptLocator:
-      sessionMocks.resolveAndPersistSessionTranscriptLocator,
+    resolveAndPersistSessionTranscriptIdentity:
+      sessionMocks.resolveAndPersistSessionTranscriptIdentity,
   };
 });
 vi.mock("openclaw/plugin-sdk/command-auth-native", async () => {
@@ -484,18 +484,16 @@ describe("registerTelegramNativeCommands — session metadata", () => {
       })),
     );
     sessionMocks.recordSessionMetaFromInbound.mockClear().mockResolvedValue(undefined);
-    sessionMocks.resolveAndPersistSessionTranscriptLocator
+    sessionMocks.resolveAndPersistSessionTranscriptIdentity
       .mockClear()
       .mockImplementation(async (params) => {
-        const transcriptLocator =
-          params.fallbackTranscriptLocator ??
-          `sqlite-transcript://${params.agentId ?? "main"}/${params.sessionId}`;
+        const topicSuffix = params.topicId === undefined ? "" : `?topic=${params.topicId}`;
+        const transcriptLocator = `sqlite-transcript://${params.agentId ?? "main"}/${params.sessionId}${topicSuffix}`;
         return {
           transcriptLocator,
           sessionEntry: {
             ...params.sessionEntry,
             sessionId: params.sessionId,
-            transcriptLocator: transcriptLocator,
             updatedAt: Date.now(),
           },
         };
@@ -1201,11 +1199,11 @@ describe("registerTelegramNativeCommands — session metadata", () => {
       createTelegramTopicCommandContext({ match: "bind --cwd /tmp/work", threadId: 42 }),
     );
 
-    expect(sessionMocks.resolveAndPersistSessionTranscriptLocator).toHaveBeenCalledWith(
+    expect(sessionMocks.resolveAndPersistSessionTranscriptIdentity).toHaveBeenCalledWith(
       expect.objectContaining({
         sessionId: "sess-topic",
         sessionKey: "agent:main:telegram:group:-1001234567890:topic:42",
-        fallbackTranscriptLocator: "sqlite-transcript://main/sess-topic?topic=42",
+        topicId: 42,
       }),
     );
     expect(pluginRuntimeMocks.executePluginCommand).toHaveBeenCalledWith(

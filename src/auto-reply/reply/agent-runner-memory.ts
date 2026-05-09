@@ -645,8 +645,8 @@ export async function runPreflightCompactionIfNeeded(params: {
     const previousSessionId = params.followupRun.run.sessionId;
     params.followupRun.run.sessionId = entry.sessionId;
     params.replyOperation.updateSessionId(entry.sessionId);
-    if (entry.transcriptLocator) {
-      params.followupRun.run.transcriptLocator = entry.transcriptLocator;
+    if (result.result?.transcriptLocator) {
+      params.followupRun.run.transcriptLocator = result.result.transcriptLocator;
     }
     const queueKey = params.followupRun.run.sessionKey ?? params.sessionKey;
     if (queueKey) {
@@ -654,7 +654,7 @@ export async function runPreflightCompactionIfNeeded(params: {
         key: queueKey,
         previousSessionId,
         nextSessionId: entry.sessionId,
-        nextTranscriptLocator: entry.transcriptLocator,
+        nextTranscriptLocator: result.result?.transcriptLocator,
       });
     }
   }
@@ -943,6 +943,12 @@ export async function runMemoryFlushIfNeeded(params: {
         });
         if (result.meta?.agentMeta?.sessionId) {
           postCompactionSessionId = result.meta.agentMeta.sessionId;
+          postCompactionTranscriptLocator =
+            result.meta.agentMeta.transcriptLocator ??
+            createSqliteSessionTranscriptLocator({
+              agentId: params.followupRun.run.agentId,
+              sessionId: result.meta.agentMeta.sessionId,
+            });
         }
         if (result.meta?.agentMeta?.transcriptLocator) {
           postCompactionTranscriptLocator = result.meta.agentMeta.transcriptLocator;
@@ -972,8 +978,8 @@ export async function runMemoryFlushIfNeeded(params: {
         activeSessionEntry = updatedEntry;
         params.followupRun.run.sessionId = updatedEntry.sessionId;
         params.replyOperation.updateSessionId(updatedEntry.sessionId);
-        if (updatedEntry.transcriptLocator) {
-          params.followupRun.run.transcriptLocator = updatedEntry.transcriptLocator;
+        if (postCompactionTranscriptLocator) {
+          params.followupRun.run.transcriptLocator = postCompactionTranscriptLocator;
         }
         const queueKey = params.followupRun.run.sessionKey ?? params.sessionKey;
         if (queueKey) {
@@ -981,7 +987,7 @@ export async function runMemoryFlushIfNeeded(params: {
             key: queueKey,
             previousSessionId,
             nextSessionId: updatedEntry.sessionId,
-            nextTranscriptLocator: updatedEntry.transcriptLocator,
+            nextTranscriptLocator: postCompactionTranscriptLocator,
           });
         }
       }
@@ -1001,8 +1007,8 @@ export async function runMemoryFlushIfNeeded(params: {
           activeSessionEntry = updatedEntry;
           params.followupRun.run.sessionId = updatedEntry.sessionId;
           params.replyOperation.updateSessionId(updatedEntry.sessionId);
-          if (updatedEntry.transcriptLocator) {
-            params.followupRun.run.transcriptLocator = updatedEntry.transcriptLocator;
+          if (postCompactionTranscriptLocator) {
+            params.followupRun.run.transcriptLocator = postCompactionTranscriptLocator;
           }
         }
       } catch (err) {

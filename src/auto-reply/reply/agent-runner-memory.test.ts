@@ -187,11 +187,12 @@ describe("runMemoryFlushIfNeeded", () => {
       key: sessionKey,
       previousSessionId: "session",
       nextSessionId: "session-rotated",
-      nextTranscriptLocator: expect.stringContaining("session-rotated.jsonl"),
+      nextTranscriptLocator: "sqlite-transcript://main/session-rotated",
     });
 
     const persisted = readTestSessionRow(sessionKey);
     expect(persisted?.sessionId).toBe("session-rotated");
+    expect(persisted?.transcriptLocator).toBeUndefined();
     expect(persisted?.compactionCount).toBe(2);
     expect(persisted?.memoryFlushCompactionCount).toBe(1);
     expect(persisted?.memoryFlushAt).toBe(1_700_000_000_000);
@@ -443,7 +444,7 @@ describe("runMemoryFlushIfNeeded", () => {
     });
 
     expect(entry?.sessionId).toBe("session-rotated");
-    expect(entry?.transcriptLocator).toBe(successorFile);
+    expect(entry?.transcriptLocator).toBeUndefined();
     expect(followupRun.run.sessionId).toBe("session-rotated");
     expect(followupRun.run.transcriptLocator).toBe(successorFile);
     expect(updateSessionId).toHaveBeenCalledWith("session-rotated");
