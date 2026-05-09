@@ -14,7 +14,7 @@ function makeRun(): FollowupRun["run"] {
     agentDir: "/tmp/agent",
     sessionId: "session-1",
     sessionKey: QUEUE_KEY,
-    transcriptLocator: "/tmp/session-1.jsonl",
+    transcriptLocator: "sqlite-transcript://main/session-1",
     workspaceDir: "/tmp/workspace",
     config: {} as FollowupRun["run"]["config"],
     provider: "anthropic",

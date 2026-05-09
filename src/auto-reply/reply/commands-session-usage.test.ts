@@ -142,13 +142,13 @@ describe("handleUsageCommand", () => {
     const params = buildUsageParams();
     params.sessionEntry = {
       sessionId: "wrapper-session",
-      transcriptLocator: "/tmp/wrapper-session.jsonl",
+      transcriptLocator: "sqlite-transcript://main/wrapper-session",
       updatedAt: Date.now(),
     };
     params.sessionStore = {
       [params.sessionKey]: {
         sessionId: "target-session",
-        transcriptLocator: "/tmp/target-session.jsonl",
+        transcriptLocator: "sqlite-transcript://main/target-session",
         updatedAt: Date.now(),
       },
     };
@@ -158,7 +158,7 @@ describe("handleUsageCommand", () => {
     expect(loadSessionCostSummaryMock).toHaveBeenCalledWith(
       expect.objectContaining({
         sessionId: "target-session",
-        transcriptLocator: "/tmp/target-session.jsonl",
+        transcriptLocator: "sqlite-transcript://main/target-session",
       }),
     );
   });

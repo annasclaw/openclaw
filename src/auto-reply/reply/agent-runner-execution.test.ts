@@ -236,7 +236,7 @@ function createFollowupRun(): FollowupRun {
       sessionId: "session",
       sessionKey: "main",
       messageProvider: "whatsapp",
-      transcriptLocator: "/tmp/session.jsonl",
+      transcriptLocator: "sqlite-transcript://agent/session",
       workspaceDir: "/tmp",
       config: {},
       skillsSnapshot: {},

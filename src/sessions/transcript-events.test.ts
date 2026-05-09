@@ -14,10 +14,12 @@ describe("transcript events", () => {
     const listener = vi.fn();
     cleanup.push(onSessionTranscriptUpdate(listener));
 
-    emitSessionTranscriptUpdate("  /tmp/session.jsonl  ");
+    emitSessionTranscriptUpdate("  sqlite-transcript://main/session  ");
 
     expect(listener).toHaveBeenCalledTimes(1);
-    expect(listener).toHaveBeenCalledWith({ transcriptLocator: "/tmp/session.jsonl" });
+    expect(listener).toHaveBeenCalledWith({
+      transcriptLocator: "sqlite-transcript://main/session",
+    });
   });
 
   it("includes optional session metadata when provided", () => {
@@ -27,7 +29,7 @@ describe("transcript events", () => {
     emitSessionTranscriptUpdate({
       agentId: "  main  ",
       sessionId: "  sess-1  ",
-      transcriptLocator: "  /tmp/session.jsonl  ",
+      transcriptLocator: "  sqlite-transcript://main/session  ",
       sessionKey: "  agent:main:main  ",
       message: { role: "assistant", content: "hi" },
       messageId: "  msg-1  ",
@@ -36,7 +38,7 @@ describe("transcript events", () => {
     expect(listener).toHaveBeenCalledWith({
       agentId: "main",
       sessionId: "sess-1",
-      transcriptLocator: "/tmp/session.jsonl",
+      transcriptLocator: "sqlite-transcript://main/session",
       sessionKey: "agent:main:main",
       message: { role: "assistant", content: "hi" },
       messageId: "msg-1",
@@ -51,7 +53,7 @@ describe("transcript events", () => {
     cleanup.push(onSessionTranscriptUpdate(first));
     cleanup.push(onSessionTranscriptUpdate(second));
 
-    expect(emitSessionTranscriptUpdate("/tmp/session.jsonl")).toBeUndefined();
+    expect(emitSessionTranscriptUpdate("sqlite-transcript://main/session")).toBeUndefined();
     expect(first).toHaveBeenCalledTimes(1);
     expect(second).toHaveBeenCalledTimes(1);
   });
