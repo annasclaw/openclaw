@@ -184,14 +184,14 @@ describe("session-compaction-checkpoints", () => {
 
   test("async capture keeps checkpoint transcript locators virtual for SQLite sources", async () => {
     const sourceSessionId = "source-capture-virtual";
-    const sourceFile = createSqliteSessionTranscriptLocator({
+    const sourceTranscriptLocator = createSqliteSessionTranscriptLocator({
       agentId: DEFAULT_AGENT_ID,
       sessionId: sourceSessionId,
     });
     replaceSqliteSessionTranscriptEvents({
       agentId: DEFAULT_AGENT_ID,
       sessionId: sourceSessionId,
-      transcriptPath: sourceFile,
+      transcriptPath: sourceTranscriptLocator,
       events: [
         {
           type: "session",
@@ -209,7 +209,7 @@ describe("session-compaction-checkpoints", () => {
     });
 
     const snapshot = await captureCompactionCheckpointSnapshotAsync({
-      transcriptLocator: sourceFile,
+      transcriptLocator: sourceTranscriptLocator,
     });
 
     expect(snapshot).not.toBeNull();
@@ -228,7 +228,7 @@ describe("session-compaction-checkpoints", () => {
     expect(readSqliteTranscriptEvents(snapshot!.sessionId)[0]).toMatchObject({
       type: "session",
       id: snapshot!.sessionId,
-      parentSession: sourceFile,
+      parentSession: sourceTranscriptLocator,
     });
   });
 
@@ -282,7 +282,7 @@ describe("session-compaction-checkpoints", () => {
     let forked: Awaited<ReturnType<typeof forkCompactionCheckpointTranscriptAsync>> = null;
     try {
       forked = await forkCompactionCheckpointTranscriptAsync({
-        sourceFile: transcriptLocator!,
+        sourceTranscriptLocator: transcriptLocator!,
       });
 
       expect(openSpy).not.toHaveBeenCalled();
@@ -311,14 +311,14 @@ describe("session-compaction-checkpoints", () => {
 
   test("async fork keeps transcript locators virtual for SQLite sources", async () => {
     const sourceSessionId = "source-fork-virtual";
-    const sourceFile = createSqliteSessionTranscriptLocator({
+    const sourceTranscriptLocator = createSqliteSessionTranscriptLocator({
       agentId: DEFAULT_AGENT_ID,
       sessionId: sourceSessionId,
     });
     replaceSqliteSessionTranscriptEvents({
       agentId: DEFAULT_AGENT_ID,
       sessionId: sourceSessionId,
-      transcriptPath: sourceFile,
+      transcriptPath: sourceTranscriptLocator,
       events: [
         {
           type: "session",
@@ -336,7 +336,7 @@ describe("session-compaction-checkpoints", () => {
     });
 
     const forked = await forkCompactionCheckpointTranscriptAsync({
-      sourceFile,
+      sourceTranscriptLocator,
     });
 
     expect(forked).not.toBeNull();
@@ -349,7 +349,7 @@ describe("session-compaction-checkpoints", () => {
       type: "session",
       id: forked!.sessionId,
       cwd: "/tmp/openclaw-virtual-fork",
-      parentSession: sourceFile,
+      parentSession: sourceTranscriptLocator,
     });
     expect(forkedEntries[1]).toMatchObject({
       type: "message",
@@ -364,7 +364,7 @@ describe("session-compaction-checkpoints", () => {
 
   test("async fork ignores legacy checkpoint locators that doctor has not imported", async () => {
     const forked = await forkCompactionCheckpointTranscriptAsync({
-      sourceFile: path.join(os.tmpdir(), "openclaw-unimported-legacy-session.jsonl"),
+      sourceTranscriptLocator: path.join(os.tmpdir(), "openclaw-unimported-legacy-session.jsonl"),
     });
 
     expect(forked).toBeNull();
