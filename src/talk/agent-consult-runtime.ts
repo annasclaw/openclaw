@@ -4,10 +4,7 @@ import {
   forkSessionFromParent,
   resolveParentForkDecision,
 } from "../auto-reply/reply/session-fork.js";
-import {
-  createSqliteSessionTranscriptLocator,
-  isSqliteSessionTranscriptLocator,
-} from "../config/sessions/paths.js";
+import { createSqliteSessionTranscriptLocator } from "../config/sessions/paths.js";
 import { parseSessionThreadInfoFast } from "../config/sessions/thread-info.js";
 import type { SessionEntry } from "../config/sessions/types.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
@@ -167,7 +164,6 @@ async function resolveRealtimeVoiceAgentConsultSessionEntry(params: {
             ...existing,
             ...deliveryFields,
             sessionId: fork.sessionId,
-            transcriptLocator: fork.transcriptLocator,
             spawnedBy: requesterSessionKey,
             forkedFromParent: true,
             updatedAt: now,
@@ -249,14 +245,10 @@ export async function consultRealtimeVoiceAgent(params: {
     resolvedDeliveryContext ?? deliveryContextFromSession(sessionEntry);
   const sessionId = sessionEntry.sessionId;
 
-  const persistedTranscriptLocator = sessionEntry.transcriptLocator?.trim();
-  const transcriptLocator =
-    persistedTranscriptLocator && isSqliteSessionTranscriptLocator(persistedTranscriptLocator)
-      ? persistedTranscriptLocator
-      : createSqliteSessionTranscriptLocator({
-          agentId,
-          sessionId,
-        });
+  const transcriptLocator = createSqliteSessionTranscriptLocator({
+    agentId,
+    sessionId,
+  });
   const result = await params.agentRuntime.runEmbeddedPiAgent({
     sessionId,
     sessionKey: params.sessionKey,

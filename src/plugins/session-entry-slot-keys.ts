@@ -13,7 +13,6 @@ const SESSION_ENTRY_RESERVED_SLOT_KEY_LIST = [
   "pluginNextTurnInjections",
   "sessionId",
   "updatedAt",
-  "transcriptLocator",
   "spawnedBy",
   "spawnedWorkspaceDir",
   "parentSessionKey",

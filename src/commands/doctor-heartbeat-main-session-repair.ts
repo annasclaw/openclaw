@@ -197,7 +197,7 @@ export async function repairHeartbeatPoisonedMainSession(params: {
   try {
     transcriptPath = resolveSessionTranscriptLocator(
       mainEntry.sessionId,
-      mainEntry,
+      undefined,
       params.sessionPathOpts,
     );
   } catch {
@@ -207,13 +207,7 @@ export async function repairHeartbeatPoisonedMainSession(params: {
     resolveHeartbeatMainSessionRepairCandidate({
       entry,
       transcriptPath,
-    }) ??
-    (mainEntry.transcriptLocator && mainEntry.transcriptLocator !== transcriptPath
-      ? resolveHeartbeatMainSessionRepairCandidate({
-          entry,
-          transcriptPath: mainEntry.transcriptLocator,
-        })
-      : null);
+    });
   const candidate = resolveCandidate(mainEntry);
   if (!candidate) {
     return;

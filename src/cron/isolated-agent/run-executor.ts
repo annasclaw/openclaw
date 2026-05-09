@@ -102,16 +102,10 @@ export function createCronPromptExecutor(params: {
   abortReason: () => string;
   onExecutionStarted?: () => void;
 }) {
-  const transcriptLocator =
-    params.cronSession.sessionEntry.transcriptLocator?.trim() ||
-    createSqliteSessionTranscriptLocator({
-      sessionId: params.cronSession.sessionEntry.sessionId,
-      agentId: params.agentId,
-    });
-  // Fallback for callers that bypass prepareCronRunContext before persisting retries.
-  if (!params.cronSession.sessionEntry.transcriptLocator?.trim()) {
-    params.cronSession.sessionEntry.transcriptLocator = transcriptLocator;
-  }
+  const transcriptLocator = createSqliteSessionTranscriptLocator({
+    sessionId: params.cronSession.sessionEntry.sessionId,
+    agentId: params.agentId,
+  });
   const cronFallbacksOverride = resolveCronFallbacksOverride({
     cfg: params.cfg,
     job: params.job,
