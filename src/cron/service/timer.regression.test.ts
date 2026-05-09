@@ -50,7 +50,7 @@ describe("cron service timer regressions", () => {
     const store = timerRegressionFixtures.makeStorePath();
     const state = createCronServiceState({
       cronEnabled: true,
-      storePath: store.storePath,
+      storeKey: store.storePath,
       log: noopLogger,
       enqueueSystemEvent: vi.fn(),
       requestHeartbeat: vi.fn(),
@@ -86,7 +86,7 @@ describe("cron service timer regressions", () => {
     const store = timerRegressionFixtures.makeStorePath();
     const now = Date.parse("2026-02-06T10:05:00.000Z");
     const state = createRunningCronServiceState({
-      storePath: store.storePath,
+      storeKey: store.storePath,
       log: noopLogger,
       nowMs: () => now,
       jobs: [createDueIsolatedJob({ id: "due", nowMs: now, nextRunAtMs: now - 1 })],
@@ -133,7 +133,7 @@ describe("cron service timer regressions", () => {
         .mockResolvedValueOnce({ status: "ok", summary: "done" });
       const state = createCronServiceState({
         cronEnabled: true,
-        storePath: store.storePath,
+        storeKey: store.storePath,
         log: noopLogger,
         nowMs: () => now,
         enqueueSystemEvent: vi.fn(),
@@ -204,7 +204,7 @@ describe("cron service timer regressions", () => {
     });
     const state = createCronServiceState({
       cronEnabled: true,
-      storePath: store.storePath,
+      storeKey: store.storePath,
       log: noopLogger,
       nowMs: () => now,
       enqueueSystemEvent: vi.fn(),
@@ -246,7 +246,7 @@ describe("cron service timer regressions", () => {
     });
     const state = createCronServiceState({
       cronEnabled: true,
-      storePath: store.storePath,
+      storeKey: store.storePath,
       log: noopLogger,
       nowMs: () => now,
       enqueueSystemEvent: vi.fn(),
@@ -291,7 +291,7 @@ describe("cron service timer regressions", () => {
       .mockResolvedValueOnce({ status: "ok", summary: "done" });
     const state = createCronServiceState({
       cronEnabled: true,
-      storePath: store.storePath,
+      storeKey: store.storePath,
       log: noopLogger,
       nowMs: () => now,
       enqueueSystemEvent: vi.fn(),
@@ -340,7 +340,7 @@ describe("cron service timer regressions", () => {
       .mockResolvedValueOnce({ status: "ok", summary: "done" });
     const state = createCronServiceState({
       cronEnabled: true,
-      storePath: store.storePath,
+      storeKey: store.storePath,
       log: noopLogger,
       nowMs: () => now,
       enqueueSystemEvent: vi.fn(),
@@ -382,7 +382,7 @@ describe("cron service timer regressions", () => {
     let now = scheduledAt;
     const state = createCronServiceState({
       cronEnabled: true,
-      storePath: store.storePath,
+      storeKey: store.storePath,
       log: noopLogger,
       nowMs: () => now,
       enqueueSystemEvent: vi.fn(),
@@ -420,7 +420,7 @@ describe("cron service timer regressions", () => {
     let fireCount = 0;
     const state = createCronServiceState({
       cronEnabled: true,
-      storePath: store.storePath,
+      storeKey: store.storePath,
       log: noopLogger,
       nowMs: () => now,
       enqueueSystemEvent: vi.fn(),
@@ -459,7 +459,7 @@ describe("cron service timer regressions", () => {
     let now = scheduledAt;
     const state = createCronServiceState({
       cronEnabled: true,
-      storePath: store.storePath,
+      storeKey: store.storePath,
       log: noopLogger,
       nowMs: () => now,
       enqueueSystemEvent: vi.fn(),
@@ -495,7 +495,7 @@ describe("cron service timer regressions", () => {
     const deferredRun = createDeferred<{ status: "ok"; summary: string }>();
     const state = createCronServiceState({
       cronEnabled: true,
-      storePath: store.storePath,
+      storeKey: store.storePath,
       log: noopLogger,
       nowMs: () => now,
       enqueueSystemEvent: vi.fn(),
@@ -550,7 +550,7 @@ describe("cron service timer regressions", () => {
     });
     const state = createCronServiceState({
       cronEnabled: true,
-      storePath: store.storePath,
+      storeKey: store.storePath,
       log: noopLogger,
       nowMs: () => now,
       enqueueSystemEvent: vi.fn(),
@@ -595,7 +595,7 @@ describe("cron service timer regressions", () => {
       const abortAwareRunner = createAbortAwareIsolatedRunner();
       const state = createCronServiceState({
         cronEnabled: true,
-        storePath: store.storePath,
+        storeKey: store.storePath,
         log: noopLogger,
         nowMs: () => now,
         enqueueSystemEvent: vi.fn(),
@@ -642,7 +642,7 @@ describe("cron service timer regressions", () => {
       let observedAbortSignal: AbortSignal | undefined;
       const state = createCronServiceState({
         cronEnabled: true,
-        storePath: store.storePath,
+        storeKey: store.storePath,
         log: noopLogger,
         nowMs: () => now,
         enqueueSystemEvent: vi.fn(),
@@ -710,7 +710,7 @@ describe("cron service timer regressions", () => {
       const abortAwareRunner = createAbortAwareIsolatedRunner("late-summary");
       const state = createCronServiceState({
         cronEnabled: true,
-        storePath: store.storePath,
+        storeKey: store.storePath,
         log: noopLogger,
         nowMs: () => now,
         enqueueSystemEvent,
@@ -757,7 +757,7 @@ describe("cron service timer regressions", () => {
       const abortAwareRunner = createAbortAwareIsolatedRunner();
       const state = createCronServiceState({
         cronEnabled: true,
-        storePath: store.storePath,
+        storeKey: store.storePath,
         log: noopLogger,
         nowMs: () => now,
         enqueueSystemEvent: vi.fn(),
@@ -807,7 +807,7 @@ describe("cron service timer regressions", () => {
     };
     const state = createCronServiceState({
       cronEnabled: true,
-      storePath: "/tmp/openclaw-cron-abort-test/jobs.json",
+      storeKey: "cron-test:abort-main-wake-now",
       log: noopLogger,
       nowMs: () => Date.now(),
       enqueueSystemEvent,
@@ -859,7 +859,7 @@ describe("cron service timer regressions", () => {
     };
     const state = createCronServiceState({
       cronEnabled: true,
-      storePath: "/tmp/openclaw-cron-busy-main-test/jobs.json",
+      storeKey: "cron-test:busy-main-wake-now",
       log: noopLogger,
       nowMs,
       enqueueSystemEvent,
@@ -923,7 +923,7 @@ describe("cron service timer regressions", () => {
     const events: CronEvent[] = [];
     const state = createCronServiceState({
       cronEnabled: true,
-      storePath: store.storePath,
+      storeKey: store.storePath,
       log: noopLogger,
       nowMs: () => now,
       enqueueSystemEvent: vi.fn(),
@@ -973,7 +973,7 @@ describe("cron service timer regressions", () => {
     const secondRun = createDeferred<{ status: "ok"; summary: string }>();
     const state = createCronServiceState({
       cronEnabled: true,
-      storePath: store.storePath,
+      storeKey: store.storePath,
       cronConfig: { maxConcurrentRuns: 2 },
       log: noopLogger,
       nowMs: () => now,
@@ -1040,7 +1040,7 @@ describe("cron service timer regressions", () => {
     };
     const state = createCronServiceState({
       cronEnabled: true,
-      storePath: store.storePath,
+      storeKey: store.storePath,
       log,
       nowMs: () => dueAt,
       enqueueSystemEvent: vi.fn(),
@@ -1098,7 +1098,7 @@ describe("cron service timer regressions", () => {
     };
     const state = createCronServiceState({
       cronEnabled: true,
-      storePath: store.storePath,
+      storeKey: store.storePath,
       log,
       nowMs: () => dueAt,
       enqueueSystemEvent: vi.fn(),
@@ -1150,7 +1150,7 @@ describe("cron service timer regressions", () => {
 
       const state = createCronServiceState({
         cronEnabled: true,
-        storePath: store.storePath,
+        storeKey: store.storePath,
         log: noopLogger,
         nowMs: () => now,
         enqueueSystemEvent: vi.fn(),
@@ -1232,7 +1232,7 @@ describe("cron service timer regressions", () => {
       const cleanupTimedOutAgentRun = vi.fn(async () => {});
       const state = createCronServiceState({
         cronEnabled: true,
-        storePath: store.storePath,
+        storeKey: store.storePath,
         log: noopLogger,
         nowMs: () => now,
         enqueueSystemEvent: vi.fn(),
@@ -1295,7 +1295,7 @@ describe("cron service timer regressions", () => {
     const endedAt = startedAt + 50;
     const state = createCronServiceState({
       cronEnabled: true,
-      storePath: "/tmp/cron-30905-success.json",
+      storeKey: "cron-test:30905-success",
       log: noopLogger,
       nowMs: () => endedAt,
       enqueueSystemEvent: vi.fn(),
@@ -1333,7 +1333,7 @@ describe("cron service timer regressions", () => {
     const endedAt = startedAt + 25;
     const state = createCronServiceState({
       cronEnabled: true,
-      storePath: "/tmp/cron-30905-error.json",
+      storeKey: "cron-test:30905-error",
       log: noopLogger,
       nowMs: () => endedAt,
       enqueueSystemEvent: vi.fn(),
@@ -1372,7 +1372,7 @@ describe("cron service timer regressions", () => {
     const endedAt = startedAt + 50;
     const state = createCronServiceState({
       cronEnabled: true,
-      storePath: "/tmp/cron-66019-success.json",
+      storeKey: "cron-test:66019-success",
       log: noopLogger,
       nowMs: () => endedAt,
       enqueueSystemEvent: vi.fn(),
@@ -1413,7 +1413,7 @@ describe("cron service timer regressions", () => {
     const endedAt = startedAt + 25;
     const state = createCronServiceState({
       cronEnabled: true,
-      storePath: "/tmp/cron-66019-error.json",
+      storeKey: "cron-test:66019-error",
       log: noopLogger,
       nowMs: () => endedAt,
       enqueueSystemEvent: vi.fn(),
@@ -1472,7 +1472,7 @@ describe("cron service timer regressions", () => {
       },
     };
     const state = createRunningCronServiceState({
-      storePath: "/tmp/cron-force-run-anchor-test.json",
+      storeKey: "cron-test:force-run-anchor",
       log: noopLogger,
       nowMs: () => nowMs,
       jobs: [job],
@@ -1501,7 +1501,7 @@ describe("cron service timer regressions", () => {
     const log = { ...noopLogger, warn: vi.fn() };
     const state = createCronServiceState({
       cronEnabled: true,
-      storePath: "/tmp/cron-diagnostics-job.json",
+      storeKey: "cron-test:diagnostics-job",
       log,
       nowMs: () => endedAt,
       enqueueSystemEvent: vi.fn(),

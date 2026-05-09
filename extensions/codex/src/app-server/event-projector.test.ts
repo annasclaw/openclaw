@@ -528,7 +528,7 @@ describe("CodexAppServerEventProjector", () => {
       {
         prompt: "hello",
         sessionId: "session-1",
-        transcriptLocator: "/tmp/session.jsonl",
+        transcriptLocator: "sqlite-transcript://main/session-1",
         workspaceDir: "/tmp",
         runId: "run-1",
         provider: "openai-codex",

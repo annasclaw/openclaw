@@ -58,6 +58,10 @@ describe("memory manager readonly recovery", () => {
     return _createMemorySyncControlConfigForTests(workspaceDir, indexPath);
   }
 
+  function transcriptLocator(sessionId: string): string {
+    return `sqlite-transcript://main/${sessionId}`;
+  }
+
   function createReadonlyRecoveryHarness() {
     const reopenedClose = vi.fn();
     const initialClose = vi.fn();
@@ -231,9 +235,9 @@ describe("memory manager readonly recovery", () => {
     const harness = createQueuedSyncHarness(pendingSync);
 
     const queued = enqueueMemoryTargetedSessionSync(harness.state, [
-      "  /tmp/first.jsonl ",
+      `  ${transcriptLocator("first")} `,
       "",
-      "/tmp/second.jsonl",
+      transcriptLocator("second"),
     ]);
 
     expect(harness.sync).not.toHaveBeenCalled();
@@ -244,7 +248,7 @@ describe("memory manager readonly recovery", () => {
     expect(harness.sync).toHaveBeenCalledTimes(1);
     expect(harness.sync).toHaveBeenCalledWith({
       reason: "queued-session-transcripts",
-      sessionTranscripts: ["/tmp/first.jsonl", "/tmp/second.jsonl"],
+      sessionTranscripts: [transcriptLocator("first"), transcriptLocator("second")],
     });
     expect(harness.queuedSessionSync).toBeNull();
   });
@@ -257,12 +261,12 @@ describe("memory manager readonly recovery", () => {
     const harness = createQueuedSyncHarness(pendingSync);
 
     const first = enqueueMemoryTargetedSessionSync(harness.state, [
-      "/tmp/first.jsonl",
-      "/tmp/second.jsonl",
+      transcriptLocator("first"),
+      transcriptLocator("second"),
     ]);
     const second = enqueueMemoryTargetedSessionSync(harness.state, [
-      "/tmp/second.jsonl",
-      "/tmp/third.jsonl",
+      transcriptLocator("second"),
+      transcriptLocator("third"),
     ]);
 
     expect(first).toBe(second);
@@ -273,7 +277,11 @@ describe("memory manager readonly recovery", () => {
     expect(harness.sync).toHaveBeenCalledTimes(1);
     expect(harness.sync).toHaveBeenCalledWith({
       reason: "queued-session-transcripts",
-      sessionTranscripts: ["/tmp/first.jsonl", "/tmp/second.jsonl", "/tmp/third.jsonl"],
+      sessionTranscripts: [
+        transcriptLocator("first"),
+        transcriptLocator("second"),
+        transcriptLocator("third"),
+      ],
     });
   });
 

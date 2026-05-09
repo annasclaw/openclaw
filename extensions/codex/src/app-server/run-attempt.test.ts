@@ -4214,7 +4214,7 @@ describe("runCodexAppServerAttempt", () => {
   });
 
   it("builds resume and turn params from the currently selected OpenClaw model", () => {
-    const params = createParams("/tmp/session.jsonl", "/tmp/workspace");
+    const params = createParams("sqlite-transcript://main/session", "/tmp/workspace");
     const appServer = {
       start: {
         transport: "stdio" as const,
@@ -4264,7 +4264,7 @@ describe("runCodexAppServerAttempt", () => {
   });
 
   it("uses turn-scoped collaboration instructions for heartbeat Codex turns", () => {
-    const params = createParams("/tmp/session.jsonl", "/tmp/workspace");
+    const params = createParams("sqlite-transcript://main/session", "/tmp/workspace");
     params.trigger = "heartbeat";
 
     expect(buildTurnCollaborationMode(params)).toEqual({

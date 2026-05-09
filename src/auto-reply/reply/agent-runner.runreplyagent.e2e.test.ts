@@ -153,7 +153,7 @@ function createMinimalRun(params?: {
       sessionId: "session",
       sessionKey,
       messageProvider: "whatsapp",
-      transcriptLocator: "/tmp/session.jsonl",
+      transcriptLocator: "sqlite-transcript://main/session-1",
       workspaceDir: "/tmp",
       config: {},
       skillsSnapshot: {},

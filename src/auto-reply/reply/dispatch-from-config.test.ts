@@ -3287,7 +3287,7 @@ describe("dispatchReplyFromConfig", () => {
         data: {
           kind: "codex-app-server-session",
           version: 1,
-          transcriptLocator: "/tmp/session.jsonl",
+          transcriptLocator: "sqlite-transcript://main/session-1",
           workspaceDir: "/workspace/openclaw",
         },
       },
@@ -3332,7 +3332,7 @@ describe("dispatchReplyFromConfig", () => {
         pluginBinding: expect.objectContaining({
           data: expect.objectContaining({
             kind: "codex-app-server-session",
-            transcriptLocator: "/tmp/session.jsonl",
+            transcriptLocator: "sqlite-transcript://main/session-1",
           }),
         }),
       }),

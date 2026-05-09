@@ -83,14 +83,19 @@ export function createDeferred<T>() {
 }
 
 export function createRunningCronServiceState(params: {
-  storePath: string;
+  storeKey?: string;
+  storePath?: string;
   log: CronServiceDeps["log"];
   nowMs: () => number;
   jobs: CronJob[];
 }) {
+  const storeKey = params.storeKey ?? params.storePath;
+  if (!storeKey) {
+    throw new Error("expected cron store key");
+  }
   const state = createCronServiceState({
     cronEnabled: true,
-    storeKey: params.storePath,
+    storeKey,
     log: params.log,
     nowMs: params.nowMs,
     enqueueSystemEvent: vi.fn(),

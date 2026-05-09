@@ -46,12 +46,12 @@ describe("CronService - armTimer tight loop prevention", () => {
   }
 
   function createTimerState(params: {
-    storePath: string;
+    storeKey: string;
     now: number;
     runIsolatedAgentJob?: () => Promise<{ status: "ok" }>;
   }) {
     return createCronServiceState({
-      storePath: params.storePath,
+      storeKey: params.storeKey,
       cronEnabled: true,
       log: noopLogger,
       nowMs: () => params.now,
@@ -79,7 +79,7 @@ describe("CronService - armTimer tight loop prevention", () => {
     const pastDueMs = 17 * 60 * 1000; // 17 minutes past due
 
     const state = createTimerState({
-      storePath: "/tmp/test-cron/jobs.json",
+      storeKey: "cron-test:tight-loop-past-due",
       now,
     });
     state.store = {
@@ -107,7 +107,7 @@ describe("CronService - armTimer tight loop prevention", () => {
     const now = Date.parse("2026-02-28T12:32:00.000Z");
 
     const state = createTimerState({
-      storePath: "/tmp/test-cron/jobs.json",
+      storeKey: "cron-test:tight-loop-future",
       now,
     });
     state.store = {
@@ -145,7 +145,7 @@ describe("CronService - armTimer tight loop prevention", () => {
     const now = Date.parse("2026-02-28T12:32:00.000Z");
 
     const state = createTimerState({
-      storePath: "/tmp/test-cron/jobs.json",
+      storeKey: "cron-test:tight-loop-missing-next",
       now,
     });
     state.store = {
@@ -189,7 +189,7 @@ describe("CronService - armTimer tight loop prevention", () => {
     });
 
     const state = createTimerState({
-      storePath: store.storePath,
+      storeKey: store.storePath,
       now,
     });
 

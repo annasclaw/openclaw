@@ -8,7 +8,7 @@ const crossAgentStore = {
   "agent:peer:only": {
     sessionId: "w1",
     updatedAt: 1,
-    sessionTranscript: "/tmp/sessions/w1.jsonl",
+    sessionTranscript: "sqlite-transcript://peer/w1",
   },
 };
 let combinedSessionEntries: typeof crossAgentStore | Record<string, never> = crossAgentStore;

@@ -178,7 +178,7 @@ describe("resolveCronSession", () => {
         entry: {
           sessionId: "existing-session-id-456",
           updatedAt: NOW_MS - 1000,
-          transcriptLocator: "/tmp/stale-session.jsonl",
+          transcriptLocator: "sqlite-transcript://main/stale-session",
           modelOverride: "sonnet-4",
         },
         fresh: true,

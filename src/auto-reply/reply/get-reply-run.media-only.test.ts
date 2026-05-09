@@ -979,7 +979,7 @@ describe("runPreparedReply media-only handling", () => {
     const sessionStore: Record<string, SessionEntry> = {
       "session-key": {
         sessionId: "session-auth-profile",
-        transcriptLocator: "/tmp/session-auth-profile.jsonl",
+        transcriptLocator: "sqlite-transcript://main/session-auth-profile",
         authProfileOverride: "profile-before-wait",
         authProfileOverrideSource: "auto",
         updatedAt: 1,
@@ -1031,7 +1031,7 @@ describe("runPreparedReply media-only handling", () => {
     const sessionStore: Record<string, SessionEntry> = {
       "session-key": {
         sessionId: "session-before-rotation",
-        transcriptLocator: "/tmp/session-before-rotation.jsonl",
+        transcriptLocator: "sqlite-transcript://main/session-before-rotation",
         updatedAt: 1,
       },
     };
@@ -1060,7 +1060,7 @@ describe("runPreparedReply media-only handling", () => {
     sessionStore["session-key"] = {
       ...sessionStore["session-key"],
       sessionId: "session-after-rotation",
-      transcriptLocator: "/tmp/session-after-rotation.jsonl",
+      transcriptLocator: "sqlite-transcript://main/session-after-rotation",
       updatedAt: 2,
     };
     rotatedRun.updateSessionId("session-after-rotation");
