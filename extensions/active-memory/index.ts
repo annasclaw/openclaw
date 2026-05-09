@@ -3,7 +3,7 @@ import path from "node:path";
 import {
   createSqliteSessionTranscriptLocator,
   loadSqliteSessionTranscriptEvents,
-  resolveSqliteSessionTranscriptScopeForPath,
+  resolveSqliteSessionTranscriptScopeForLocator,
 } from "openclaw/plugin-sdk/agent-harness-runtime";
 import {
   DEFAULT_PROVIDER,
@@ -252,7 +252,7 @@ type TranscriptReadLimits = {
 
 type RecallSubagentResult = {
   rawReply: string;
-  transcriptPath?: string;
+  transcriptLocator?: string;
   searchDebug?: ActiveMemorySearchDebug;
 };
 
@@ -1507,8 +1507,8 @@ async function streamBoundedTranscriptJsonl(params: {
   onRecord: (record: unknown) => boolean | void;
 }): Promise<void> {
   const limits = resolveTranscriptReadLimits(params.limits);
-  const scope = resolveSqliteSessionTranscriptScopeForPath({
-    transcriptPath: params.transcriptLocator,
+  const scope = resolveSqliteSessionTranscriptScopeForLocator({
+    transcriptLocator: params.transcriptLocator,
   });
   if (!scope) {
     return;
@@ -2398,7 +2398,7 @@ async function runRecallSubagent(params: {
       readActiveMemorySearchDebugFromRunResult(result);
     return {
       rawReply: rawReply || "NONE",
-      transcriptPath: params.config.persistTranscripts ? transcriptLocator : undefined,
+      transcriptLocator: params.config.persistTranscripts ? transcriptLocator : undefined,
       searchDebug,
     };
   } catch (error) {
@@ -2617,13 +2617,13 @@ async function maybeResolveActiveRecall(params: {
       return result;
     }
 
-    const { rawReply, transcriptPath, searchDebug } = raceResult;
+    const { rawReply, transcriptLocator: persistedTranscriptLocator, searchDebug } = raceResult;
     const summary = truncateSummary(
       normalizeActiveSummary(rawReply) ?? "",
       params.config.maxSummaryChars,
     );
-    if (params.config.logging && transcriptPath) {
-      params.api.logger.info?.(`${logPrefix} transcript=${transcriptPath}`);
+    if (params.config.logging && persistedTranscriptLocator) {
+      params.api.logger.info?.(`${logPrefix} transcript=${persistedTranscriptLocator}`);
     }
     const result: ActiveRecallResult =
       summary.length > 0

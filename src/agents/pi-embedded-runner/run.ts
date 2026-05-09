@@ -459,9 +459,11 @@ export async function runEmbeddedPiAgent(
     agentId: sessionAgentId,
     sessionId: params.sessionId,
   });
-  if (params.transcriptLocator !== sqliteTranscriptLocator) {
-    params = { ...params, transcriptLocator: sqliteTranscriptLocator };
-  }
+  const normalizedParams: RunEmbeddedPiAgentParams & { transcriptLocator: string } = {
+    ...params,
+    transcriptLocator: sqliteTranscriptLocator,
+  };
+  params = normalizedParams;
   const sessionLane = resolveSessionLane(params.sessionKey?.trim() || params.sessionId);
   const globalLane = resolveGlobalLane(params.lane);
   const laneTaskTimeoutMs = resolveEmbeddedRunLaneTimeoutMs(params.timeoutMs);
@@ -1000,7 +1002,7 @@ export async function runEmbeddedPiAgent(
       const overloadProfileRotationLimit = resolveOverloadProfileRotationLimit(params.config);
       const rateLimitProfileRotationLimit = resolveRateLimitProfileRotationLimit(params.config);
       let activeSessionId = params.sessionId;
-      let activeTranscriptLocator = params.transcriptLocator;
+      let activeTranscriptLocator = sqliteTranscriptLocator;
       let suppressNextUserMessagePersistence = params.suppressNextUserMessagePersistence ?? false;
       // Pi owns transcript persistence; this marker only lets the outer retry avoid
       // replaying the same inbound channel message after overflow compaction.

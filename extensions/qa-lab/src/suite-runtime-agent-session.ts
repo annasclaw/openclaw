@@ -120,7 +120,6 @@ async function seedQaSessionTranscript(
   replaceSqliteSessionTranscriptEvents({
     agentId,
     sessionId,
-    transcriptPath: transcriptLocator,
     env: env.gateway.runtimeEnv,
     events: [
       {
@@ -141,7 +140,6 @@ async function seedQaSessionTranscript(
     entry: {
       sessionId,
       updatedAt: now,
-      transcriptLocator,
       ...(params.lastChannel ? { lastChannel: params.lastChannel } : {}),
       ...(params.lastProvider ? { lastProvider: params.lastProvider } : {}),
       ...(params.lastTo ? { lastTo: params.lastTo } : {}),

@@ -9,6 +9,7 @@ import {
 } from "openclaw/plugin-sdk/hook-runtime";
 import { createMockPluginRegistry } from "openclaw/plugin-sdk/plugin-test-runtime";
 import {
+  createSqliteSessionTranscriptLocator,
   loadSqliteSessionTranscriptEvents,
   replaceSqliteSessionTranscriptEvents,
 } from "openclaw/plugin-sdk/session-store-runtime";
@@ -41,11 +42,11 @@ afterEach(async () => {
   }
 });
 
-async function createTempTranscriptLocator() {
+async function createTempTranscriptLocator(sessionId = "session") {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-codex-transcript-"));
   tempDirs.push(dir);
   vi.stubEnv("OPENCLAW_STATE_DIR", dir);
-  return path.join(dir, "session.jsonl");
+  return createSqliteSessionTranscriptLocator({ agentId: "main", sessionId });
 }
 
 async function makeRoot(prefix: string): Promise<string> {
@@ -55,13 +56,13 @@ async function makeRoot(prefix: string): Promise<string> {
   return root;
 }
 
-function sessionIdFromFile(transcriptLocator: string): string {
-  return path.basename(transcriptLocator).replace(/\.jsonl$/i, "");
+function sessionIdFromLocator(transcriptLocator: string): string {
+  return transcriptLocator.replace(/^sqlite-transcript:\/\/[^/]+\//, "").replace(/\?.*$/, "");
 }
 
 function readTranscriptEvents(
   transcriptLocator: string,
-  sessionId = sessionIdFromFile(transcriptLocator),
+  sessionId = sessionIdFromLocator(transcriptLocator),
 ) {
   return loadSqliteSessionTranscriptEvents({
     agentId: "main",
@@ -71,7 +72,7 @@ function readTranscriptEvents(
 
 function readTranscriptRaw(
   transcriptLocator: string,
-  sessionId = sessionIdFromFile(transcriptLocator),
+  sessionId = sessionIdFromLocator(transcriptLocator),
 ) {
   const lines = readTranscriptEvents(transcriptLocator, sessionId).map((event) =>
     JSON.stringify(event),
@@ -117,9 +118,12 @@ describe("mirrorCodexAppServerTranscript", () => {
     );
   });
 
-  it("creates the transcript directory on first mirror", async () => {
-    const root = await makeRoot("openclaw-codex-transcript-missing-dir-");
-    const transcriptLocator = path.join(root, "nested", "sessions", "session.jsonl");
+  it("creates the SQLite transcript on first mirror", async () => {
+    await makeRoot("openclaw-codex-transcript-missing-dir-");
+    const transcriptLocator = createSqliteSessionTranscriptLocator({
+      agentId: "main",
+      sessionId: "session",
+    });
 
     await mirrorCodexAppServerTranscript({
       transcriptLocator,
@@ -269,11 +273,10 @@ describe("mirrorCodexAppServerTranscript", () => {
   });
 
   it("migrates small linear transcripts before mirroring", async () => {
-    const transcriptLocator = await createTempTranscriptLocator();
+    const transcriptLocator = await createTempTranscriptLocator("linear-codex-session");
     replaceSqliteSessionTranscriptEvents({
       agentId: "main",
       sessionId: "linear-codex-session",
-      transcriptPath: transcriptLocator,
       events: [
         {
           type: "session",

@@ -5,6 +5,7 @@ import type { AgentMessage } from "openclaw/plugin-sdk/agent-core";
 import type { EmbeddedRunAttemptParams } from "openclaw/plugin-sdk/agent-harness";
 import {
   appendSqliteSessionTranscriptEvent,
+  createSqliteSessionTranscriptLocator,
   embeddedAgentLog,
   SessionManager,
   type HarnessContextEngine as ContextEngine,
@@ -73,7 +74,6 @@ function seedSessionTranscript(transcriptLocator: string, messages: AgentMessage
   replaceSqliteSessionTranscriptEvents({
     agentId: "main",
     sessionId: "session-1",
-    transcriptPath: transcriptLocator,
     events: [
       {
         type: "session",
@@ -90,6 +90,10 @@ function seedSessionTranscript(transcriptLocator: string, messages: AgentMessage
       })),
     ],
   });
+}
+
+function testTranscriptLocator(sessionId = "session-1"): string {
+  return createSqliteSessionTranscriptLocator({ agentId: "main", sessionId });
 }
 
 function threadStartResult(threadId = "thread-1") {
@@ -242,7 +246,7 @@ describe("runCodexAppServerAttempt context-engine lifecycle", () => {
   });
 
   it("bootstraps and assembles non-legacy context before the Codex turn starts", async () => {
-    const transcriptLocator = path.join(tempDir, "session.jsonl");
+    const transcriptLocator = testTranscriptLocator();
     const workspaceDir = path.join(tempDir, "workspace");
     seedSessionTranscript(transcriptLocator, [assistantMessage("existing context", Date.now())]);
     const openSpy = vi.spyOn(SessionManager, "open");
@@ -303,7 +307,7 @@ describe("runCodexAppServerAttempt context-engine lifecycle", () => {
   });
 
   it("calls afterTurn with the mirrored transcript and runs turn maintenance", async () => {
-    const transcriptLocator = path.join(tempDir, "session.jsonl");
+    const transcriptLocator = testTranscriptLocator();
     const workspaceDir = path.join(tempDir, "workspace");
     const afterTurn = vi.fn(
       async (_params: Parameters<NonNullable<ContextEngine["afterTurn"]>>[0]) => undefined,
@@ -338,20 +342,17 @@ describe("runCodexAppServerAttempt context-engine lifecycle", () => {
   });
 
   it("reloads mirrored history after bootstrap mutates the session transcript", async () => {
-    const transcriptLocator = path.join(tempDir, "session.jsonl");
+    const transcriptLocator = testTranscriptLocator();
     const workspaceDir = path.join(tempDir, "workspace");
     seedSessionTranscript(transcriptLocator, [assistantMessage("existing context", Date.now())]);
     const afterTurn = vi.fn(
       async (_params: Parameters<NonNullable<ContextEngine["afterTurn"]>>[0]) => undefined,
     );
     const bootstrap = vi.fn(
-      async ({
-        transcriptLocator: file,
-      }: Parameters<NonNullable<ContextEngine["bootstrap"]>>[0]) => {
+      async (_params: Parameters<NonNullable<ContextEngine["bootstrap"]>>[0]) => {
         appendSqliteSessionTranscriptEvent({
           agentId: "main",
           sessionId: "session-1",
-          transcriptPath: file,
           event: {
             type: "message",
             id: "bootstrap-context",
@@ -404,7 +405,7 @@ describe("runCodexAppServerAttempt context-engine lifecycle", () => {
   });
 
   it("logs assemble failures as a formatted message instead of the raw error object", async () => {
-    const transcriptLocator = path.join(tempDir, "session.jsonl");
+    const transcriptLocator = testTranscriptLocator();
     const workspaceDir = path.join(tempDir, "workspace");
     const rawError = new Error("Authorization: Bearer sk-abcdefghijklmnopqrstuv");
     const contextEngine = createContextEngine({
@@ -439,7 +440,7 @@ describe("runCodexAppServerAttempt context-engine lifecycle", () => {
   });
 
   it("falls back to ingestBatch and skips turn maintenance on prompt failure", async () => {
-    const transcriptLocator = path.join(tempDir, "session.jsonl");
+    const transcriptLocator = testTranscriptLocator();
     const workspaceDir = path.join(tempDir, "workspace");
     const ingestBatch = vi.fn(async () => ({ ingestedCount: 2 }));
     const maintain = vi.fn(async () => ({ changed: false, bytesFreed: 0, rewrittenEntries: 0 }));

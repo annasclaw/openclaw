@@ -175,7 +175,6 @@ describe("active-memory plugin", () => {
       appendSqliteSessionTranscriptEvent({
         agentId: "main",
         sessionId,
-        transcriptPath: transcriptLocator,
         event: record,
       });
     }
@@ -3723,7 +3722,7 @@ describe("active-memory plugin", () => {
 
     const transcriptLocator = runEmbeddedPiAgent.mock.calls.at(-1)?.[0]?.transcriptLocator;
     expect(transcriptLocator).toMatch(
-      /^sqlite-transcript:\/\/main\/active-memory-[a-z0-9]+-[a-f0-9]{8}\.jsonl$/,
+      /^sqlite-transcript:\/\/main\/active-memory-[a-z0-9]+-[a-f0-9]{8}$/,
     );
     expect(mkdtempSpy).not.toHaveBeenCalled();
     expect(rmSpy).not.toHaveBeenCalled();
@@ -3749,7 +3748,7 @@ describe("active-memory plugin", () => {
 
     const transcriptLocator = runEmbeddedPiAgent.mock.calls.at(-1)?.[0]?.transcriptLocator;
     expect(transcriptLocator).toMatch(
-      /^sqlite-transcript:\/\/main\/active-memory-[a-z0-9]+-[a-f0-9]{8}\.jsonl$/,
+      /^sqlite-transcript:\/\/main\/active-memory-[a-z0-9]+-[a-f0-9]{8}$/,
     );
     expect(mkdirSpy).not.toHaveBeenCalled();
     expect(mkdtempSpy).not.toHaveBeenCalled();
@@ -3785,7 +3784,7 @@ describe("active-memory plugin", () => {
 
     expect(mkdirSpy).not.toHaveBeenCalled();
     expect(runEmbeddedPiAgent.mock.calls.at(-1)?.[0]?.transcriptLocator).toMatch(
-      /^sqlite-transcript:\/\/main\/active-memory-[a-z0-9]+-[a-f0-9]{8}\.jsonl$/,
+      /^sqlite-transcript:\/\/main\/active-memory-[a-z0-9]+-[a-f0-9]{8}$/,
     );
   });
 
@@ -3811,7 +3810,7 @@ describe("active-memory plugin", () => {
 
     expect(mkdirSpy).not.toHaveBeenCalled();
     expect(runEmbeddedPiAgent.mock.calls.at(-1)?.[0]?.transcriptLocator).toMatch(
-      /^sqlite-transcript:\/\/support-agent\/active-memory-[a-z0-9]+-[a-f0-9]{8}\.jsonl$/,
+      /^sqlite-transcript:\/\/support-agent\/active-memory-[a-z0-9]+-[a-f0-9]{8}$/,
     );
   });
 
