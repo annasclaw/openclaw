@@ -35,7 +35,7 @@ let onSessionTranscriptUpdate: typeof import("../../sessions/transcript-events.j
 
 const TEST_SESSION_ID = "session-1";
 const TEST_SESSION_KEY = "agent:main:session-1";
-const TEST_SESSION_FILE = createSqliteSessionTranscriptLocator({
+const TEST_TRANSCRIPT_LOCATOR = createSqliteSessionTranscriptLocator({
   agentId: "main",
   sessionId: TEST_SESSION_ID,
 });
@@ -98,7 +98,7 @@ function wrappedCompactionArgs(overrides: Record<string, unknown> = {}) {
   return {
     sessionId: TEST_SESSION_ID,
     sessionKey: TEST_SESSION_KEY,
-    transcriptLocator: TEST_SESSION_FILE,
+    transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
     workspaceDir: TEST_WORKSPACE_DIR,
     customInstructions: TEST_CUSTOM_INSTRUCTIONS,
     enqueue: async <T>(task: () => Promise<T> | T) => await task(),
@@ -142,7 +142,7 @@ async function runCompactionHooks(params: { sessionKey?: string; messageProvider
     messageCountAfter: 1,
     tokensAfter: 10,
     compactedCount: 1,
-    transcriptLocator: TEST_SESSION_FILE,
+    transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
     summaryLength: "summary".length,
     tokensBefore: 120,
     firstKeptEntryId: "entry-1",
@@ -191,7 +191,7 @@ describe("compactEmbeddedPiSessionDirect hooks", () => {
 
     await compactEmbeddedPiSessionDirect({
       sessionId: "session-1",
-      transcriptLocator: TEST_SESSION_FILE,
+      transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
       workspaceDir: "/tmp/workspace",
     });
 
@@ -213,7 +213,7 @@ describe("compactEmbeddedPiSessionDirect hooks", () => {
 
     await compactEmbeddedPiSessionDirect({
       sessionId: "session-1",
-      transcriptLocator: TEST_SESSION_FILE,
+      transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
       workspaceDir: "/tmp/workspace",
       allowGatewaySubagentBinding: true,
     });
@@ -230,7 +230,7 @@ describe("compactEmbeddedPiSessionDirect hooks", () => {
       sessionId: "session-1",
       sessionKey: "agent:main:main",
       sandboxSessionKey: "agent:main:telegram:default:direct:12345",
-      transcriptLocator: TEST_SESSION_FILE,
+      transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
       workspaceDir: "/tmp/workspace",
     });
 
@@ -303,7 +303,7 @@ describe("compactEmbeddedPiSessionDirect hooks", () => {
   it("preserves full sender identity when building compaction tools", async () => {
     await compactEmbeddedPiSessionDirect({
       sessionId: "session-1",
-      transcriptLocator: TEST_SESSION_FILE,
+      transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
       workspaceDir: "/tmp/workspace",
       senderId: "sender-1",
       senderName: "Alice",
@@ -347,7 +347,7 @@ describe("compactEmbeddedPiSessionDirect hooks", () => {
     const result = await compactEmbeddedPiSessionDirect({
       sessionId: "session-1",
       sessionKey: TEST_SESSION_KEY,
-      transcriptLocator: TEST_SESSION_FILE,
+      transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
       workspaceDir: "/tmp/workspace",
       provider: "openai",
       model: "gpt-primary",
@@ -403,7 +403,7 @@ describe("compactEmbeddedPiSessionDirect hooks", () => {
     const result = await compactEmbeddedPiSessionDirect({
       sessionId: "session-1",
       sessionKey: TEST_SESSION_KEY,
-      transcriptLocator: TEST_SESSION_FILE,
+      transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
       workspaceDir: "/tmp/workspace",
       provider: "openai",
       model: "gpt-primary",
@@ -475,7 +475,7 @@ describe("compactEmbeddedPiSessionDirect hooks", () => {
     const result = await compactEmbeddedPiSessionDirect({
       sessionId: "session-1",
       sessionKey: TEST_SESSION_KEY,
-      transcriptLocator: TEST_SESSION_FILE,
+      transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
       workspaceDir: "/tmp/workspace",
       provider: "openai",
       model: "gpt-primary",
@@ -513,7 +513,7 @@ describe("compactEmbeddedPiSessionDirect hooks", () => {
     const result = await compactEmbeddedPiSessionDirect({
       sessionId: "session-1",
       sessionKey: TEST_SESSION_KEY,
-      transcriptLocator: TEST_SESSION_FILE,
+      transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
       workspaceDir: "/tmp/workspace",
       provider: "openai",
       model: "gpt-primary",
@@ -559,7 +559,7 @@ describe("compactEmbeddedPiSessionDirect hooks", () => {
     const result = await compactEmbeddedPiSessionDirect({
       sessionId: "session-1",
       sessionKey: TEST_SESSION_KEY,
-      transcriptLocator: TEST_SESSION_FILE,
+      transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
       workspaceDir: "/tmp/workspace",
       provider: "openai",
       model: "gpt-primary",
@@ -626,7 +626,7 @@ describe("compactEmbeddedPiSessionDirect hooks", () => {
         messageCount: 1,
         tokenCount: 10,
         compactedCount: 1,
-        transcriptLocator: TEST_SESSION_FILE,
+        transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
       },
       expect.objectContaining({ sessionKey: "agent:main:session-1", messageProvider: "telegram" }),
     );
@@ -704,7 +704,7 @@ describe("compactEmbeddedPiSessionDirect hooks", () => {
       messageCountAfter: 1,
       tokensAfter: 10,
       compactedCount: 1,
-      transcriptLocator: TEST_SESSION_FILE,
+      transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
       onHookMessages,
     });
 
@@ -728,12 +728,12 @@ describe("compactEmbeddedPiSessionDirect hooks", () => {
     try {
       await compactTesting.runPostCompactionSideEffects({
         sessionKey: "agent:main:session-1",
-        transcriptLocator: `  ${TEST_SESSION_FILE}  `,
+        transcriptLocator: `  ${TEST_TRANSCRIPT_LOCATOR}  `,
       });
 
       expect(listener).toHaveBeenCalledTimes(1);
       expect(listener).toHaveBeenCalledWith({
-        transcriptLocator: TEST_SESSION_FILE,
+        transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
         sessionKey: "agent:main:session-1",
       });
     } finally {
@@ -757,7 +757,7 @@ describe("compactEmbeddedPiSessionDirect hooks", () => {
       const result = await compactEmbeddedPiSessionDirect({
         sessionId: "session-1",
         sessionKey: TEST_SESSION_KEY,
-        transcriptLocator: TEST_SESSION_FILE,
+        transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
         workspaceDir: "/tmp/workspace",
         config: {
           agents: {
@@ -851,7 +851,7 @@ describe("compactEmbeddedPiSessionDirect hooks", () => {
     await compactTesting.runPostCompactionSideEffects({
       config: compactionConfig("await"),
       sessionKey: TEST_SESSION_KEY,
-      transcriptLocator: TEST_SESSION_FILE,
+      transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
     });
 
     expect(resolveSessionAgentIdMock).toHaveBeenCalledWith({
@@ -875,7 +875,7 @@ describe("compactEmbeddedPiSessionDirect hooks", () => {
     const resultPromise = compactTesting.runPostCompactionSideEffects({
       config: compactionConfig("await"),
       sessionKey: TEST_SESSION_KEY,
-      transcriptLocator: TEST_SESSION_FILE,
+      transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
     });
 
     void resultPromise.then(() => {
@@ -883,7 +883,7 @@ describe("compactEmbeddedPiSessionDirect hooks", () => {
     });
     await expect(syncStarted.promise).resolves.toEqual({
       reason: "post-compaction",
-      sessionTranscripts: [TEST_SESSION_FILE],
+      sessionTranscripts: [TEST_TRANSCRIPT_LOCATOR],
     });
     expect(settled).toBe(false);
     syncRelease.resolve(undefined);
@@ -898,7 +898,7 @@ describe("compactEmbeddedPiSessionDirect hooks", () => {
     await compactTesting.runPostCompactionSideEffects({
       config: compactionConfig("off"),
       sessionKey: TEST_SESSION_KEY,
-      transcriptLocator: TEST_SESSION_FILE,
+      transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
     });
 
     expect(resolveSessionAgentIdMock).not.toHaveBeenCalled();
@@ -923,7 +923,7 @@ describe("compactEmbeddedPiSessionDirect hooks", () => {
     const resultPromise = compactTesting.runPostCompactionSideEffects({
       config: compactionConfig("async"),
       sessionKey: TEST_SESSION_KEY,
-      transcriptLocator: TEST_SESSION_FILE,
+      transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
     });
 
     await managerRequested.promise;
@@ -937,7 +937,7 @@ describe("compactEmbeddedPiSessionDirect hooks", () => {
     managerGate.resolve({ manager: { sync } });
     await expect(syncStarted.promise).resolves.toEqual({
       reason: "post-compaction",
-      sessionTranscripts: [TEST_SESSION_FILE],
+      sessionTranscripts: [TEST_TRANSCRIPT_LOCATOR],
     });
   });
 
@@ -1187,7 +1187,7 @@ describe("compactEmbeddedPiSession hooks (ownsCompaction engine)", () => {
     expect(result.compacted).toBe(true);
 
     expect(hookRunner.runBeforeCompaction).toHaveBeenCalledWith(
-      { messageCount: -1, transcriptLocator: TEST_SESSION_FILE },
+      { messageCount: -1, transcriptLocator: TEST_TRANSCRIPT_LOCATOR },
       expect.objectContaining({
         sessionKey: TEST_SESSION_KEY,
         messageProvider: "telegram",
@@ -1198,7 +1198,7 @@ describe("compactEmbeddedPiSession hooks (ownsCompaction engine)", () => {
         messageCount: -1,
         compactedCount: -1,
         tokenCount: 50,
-        transcriptLocator: TEST_SESSION_FILE,
+        transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
       },
       expect.objectContaining({
         sessionKey: TEST_SESSION_KEY,
@@ -1248,7 +1248,7 @@ describe("compactEmbeddedPiSession hooks (ownsCompaction engine)", () => {
     try {
       const result = await compactEmbeddedPiSession(
         wrappedCompactionArgs({
-          transcriptLocator: `  ${TEST_SESSION_FILE}  `,
+          transcriptLocator: `  ${TEST_TRANSCRIPT_LOCATOR}  `,
           config: compactionConfig("await"),
         }),
       );
@@ -1258,12 +1258,12 @@ describe("compactEmbeddedPiSession hooks (ownsCompaction engine)", () => {
       expect(listener).toHaveBeenCalledWith({
         agentId: "main",
         sessionId: "session-1",
-        transcriptLocator: TEST_SESSION_FILE,
+        transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
         sessionKey: TEST_SESSION_KEY,
       });
       expect(sync).toHaveBeenCalledWith({
         reason: "post-compaction",
-        sessionTranscripts: [TEST_SESSION_FILE],
+        sessionTranscripts: [TEST_TRANSCRIPT_LOCATOR],
       });
     } finally {
       cleanup();
@@ -1288,7 +1288,7 @@ describe("compactEmbeddedPiSession hooks (ownsCompaction engine)", () => {
     expect(maintain).toHaveBeenCalledWith(
       expect.objectContaining({
         sessionKey: TEST_SESSION_KEY,
-        transcriptLocator: TEST_SESSION_FILE,
+        transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
         runtimeContext: expect.objectContaining({
           workspaceDir: TEST_WORKSPACE_DIR,
         }),
@@ -1496,7 +1496,7 @@ describe("compactEmbeddedPiSession hooks (ownsCompaction engine)", () => {
         tokensBefore: 120,
         tokensAfter: 50,
         sessionId: TEST_SESSION_ID,
-        transcriptLocator: TEST_SESSION_FILE,
+        transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
       },
     } as never);
     const result = await compactEmbeddedPiSession(
@@ -1520,7 +1520,7 @@ describe("compactEmbeddedPiSession hooks (ownsCompaction engine)", () => {
     expect(maintain).toHaveBeenCalledWith(
       expect.objectContaining({
         sessionId: TEST_SESSION_ID,
-        transcriptLocator: TEST_SESSION_FILE,
+        transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
       }),
     );
   });

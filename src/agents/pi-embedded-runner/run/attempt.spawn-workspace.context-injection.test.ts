@@ -11,7 +11,7 @@ import {
 } from "./attempt.context-engine-helpers.js";
 import { resetEmbeddedAttemptHarness } from "./attempt.spawn-workspace.test-support.js";
 
-const TEST_SESSION_FILE = "sqlite-transcript://main/session-context-injection";
+const TEST_TRANSCRIPT_LOCATOR = "sqlite-transcript://main/session-context-injection";
 
 async function resolveBootstrapContext(params: {
   contextInjectionMode?: "always" | "continuation-skip" | "never";
@@ -34,7 +34,7 @@ async function resolveBootstrapContext(params: {
     bootstrapContextMode: params.bootstrapContextMode ?? "full",
     bootstrapContextRunKind: params.bootstrapContextRunKind ?? "default",
     bootstrapMode: params.bootstrapMode ?? "none",
-    transcriptLocator: TEST_SESSION_FILE,
+    transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
     hasCompletedBootstrapTranscriptTurn,
     resolveBootstrapContextForRun,
   });
@@ -57,7 +57,7 @@ describe("embedded attempt context injection", () => {
     expect(result.isContinuationTurn).toBe(true);
     expect(result.bootstrapFiles).toEqual([]);
     expect(result.contextFiles).toEqual([]);
-    expect(hasCompletedBootstrapTranscriptTurn).toHaveBeenCalledWith(TEST_SESSION_FILE);
+    expect(hasCompletedBootstrapTranscriptTurn).toHaveBeenCalledWith(TEST_TRANSCRIPT_LOCATOR);
     expect(resolveBootstrapContextForRun).not.toHaveBeenCalled();
   });
 
@@ -195,7 +195,7 @@ describe("embedded attempt context injection", () => {
       });
 
     expect(result.isContinuationTurn).toBe(true);
-    expect(hasCompletedBootstrapTranscriptTurn).toHaveBeenCalledWith(TEST_SESSION_FILE);
+    expect(hasCompletedBootstrapTranscriptTurn).toHaveBeenCalledWith(TEST_TRANSCRIPT_LOCATOR);
     expect(resolveBootstrapContextForRun).not.toHaveBeenCalled();
     expect(result.shouldRecordCompletedBootstrapTurn).toBe(false);
   });

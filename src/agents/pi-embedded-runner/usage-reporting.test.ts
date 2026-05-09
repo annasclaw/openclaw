@@ -10,7 +10,7 @@ import {
 import type { EmbeddedRunAttemptResult } from "./run/types.js";
 
 let runEmbeddedPiAgent: typeof import("./run.js").runEmbeddedPiAgent;
-const TEST_SESSION_FILE = "sqlite-transcript://main/test-session";
+const TEST_TRANSCRIPT_LOCATOR = "sqlite-transcript://main/test-session";
 
 function makeAssistantMessage(
   overrides: Partial<AssistantMessage> = {},
@@ -48,7 +48,7 @@ describe("runEmbeddedPiAgent usage reporting", () => {
     await runEmbeddedPiAgent({
       sessionId: "test-session",
       sessionKey: "test-key",
-      transcriptLocator: TEST_SESSION_FILE,
+      transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
       workspaceDir: "/tmp/workspace",
       prompt: "hello",
       timeoutMs: 30000,
@@ -71,7 +71,7 @@ describe("runEmbeddedPiAgent usage reporting", () => {
     await runEmbeddedPiAgent({
       sessionId: "test-session",
       sessionKey: "test-key",
-      transcriptLocator: TEST_SESSION_FILE,
+      transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
       workspaceDir: "/tmp/workspace",
       prompt: "hello",
       timeoutMs: 30000,
@@ -101,7 +101,7 @@ describe("runEmbeddedPiAgent usage reporting", () => {
     await runEmbeddedPiAgent({
       sessionId: "test-session",
       sessionKey: "test-key",
-      transcriptLocator: TEST_SESSION_FILE,
+      transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
       workspaceDir: "/tmp/workspace",
       prompt: "hello",
       timeoutMs: 30000,
@@ -132,7 +132,7 @@ describe("runEmbeddedPiAgent usage reporting", () => {
     await runEmbeddedPiAgent({
       sessionId: "test-session",
       sessionKey: "test-key",
-      transcriptLocator: TEST_SESSION_FILE,
+      transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
       workspaceDir: "/tmp/workspace",
       prompt: "flush",
       timeoutMs: 30000,
@@ -178,7 +178,7 @@ describe("runEmbeddedPiAgent usage reporting", () => {
     const result = await runEmbeddedPiAgent({
       sessionId: "test-session",
       sessionKey: "test-key",
-      transcriptLocator: TEST_SESSION_FILE,
+      transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
       workspaceDir: "/tmp/workspace",
       prompt: "hello",
       timeoutMs: 30000,
@@ -223,7 +223,7 @@ describe("runEmbeddedPiAgent usage reporting", () => {
     const result = await runEmbeddedPiAgent({
       sessionId: "test-session",
       sessionKey: "test-key",
-      transcriptLocator: TEST_SESSION_FILE,
+      transcriptLocator: TEST_TRANSCRIPT_LOCATOR,
       workspaceDir: "/tmp/workspace",
       prompt: "hello",
       provider: "openrouter",

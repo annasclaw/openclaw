@@ -9,7 +9,7 @@ import { SessionManager } from "../transcript/session-transcript-contract.js";
 import { readTranscriptState } from "../transcript/transcript-state.js";
 import {
   rotateTranscriptAfterCompaction,
-  rotateTranscriptFileAfterCompaction,
+  rotateSqliteTranscriptAfterCompaction,
   shouldRotateCompactionTranscript,
 } from "./compaction-successor-transcript.js";
 import { hardenManualCompactionBoundary } from "./manual-compaction-boundary.js";
@@ -71,9 +71,9 @@ describe("rotateTranscriptAfterCompaction", () => {
     const { transcriptLocator } = createCompactedSession(dir);
 
     const openSpy = vi.spyOn(SessionManager, "open").mockImplementation(() => {
-      throw new Error("SessionManager.open should not be used for file rotation");
+      throw new Error("SessionManager.open should not be used for SQLite rotation");
     });
-    const result = await rotateTranscriptFileAfterCompaction({
+    const result = await rotateSqliteTranscriptAfterCompaction({
       transcriptLocator,
       now: () => new Date("2026-04-27T12:00:00.000Z"),
     });
@@ -241,13 +241,13 @@ describe("rotateTranscriptAfterCompaction", () => {
     });
   });
 
-  it("rejects filesystem transcript locators without creating successor files", async () => {
+  it("rejects non-SQLite transcript locators", async () => {
     const dir = await createTmpDir();
     const { manager } = createCompactedSession(dir);
 
     const result = await rotateTranscriptAfterCompaction({
       sessionManager: manager,
-      transcriptLocator: path.join(dir, "legacy-session.jsonl"),
+      transcriptLocator: "legacy-transcript-handle",
       now: () => new Date("2026-04-27T12:15:00.000Z"),
     });
 
@@ -255,9 +255,6 @@ describe("rotateTranscriptAfterCompaction", () => {
       rotated: false,
       reason: "transcript not in SQLite",
     });
-    await expect(
-      fs.stat(path.join(dir, "2026-04-27T12-15-00-000Z_legacy-session.jsonl")),
-    ).rejects.toMatchObject({ code: "ENOENT" });
   });
 
   it("uses a refreshed manager after manual boundary hardening", async () => {
