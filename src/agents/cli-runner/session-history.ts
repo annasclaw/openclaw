@@ -133,7 +133,7 @@ async function loadCliSessionEntries(params: {
     const scope = resolveSqliteSessionTranscriptScope({
       agentId: params.agentId,
       sessionId: params.sessionId,
-      transcriptPath: transcriptLocator,
+      transcriptLocator: transcriptLocator,
     });
     if (!scope) {
       return [];

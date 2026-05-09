@@ -11,7 +11,7 @@ import {
 } from "../../auto-reply/tokens.js";
 import {
   loadSqliteSessionTranscriptEvents,
-  resolveSqliteSessionTranscriptScopeForPath,
+  resolveSqliteSessionTranscriptScopeForLocator,
 } from "../../config/sessions/transcript-store.sqlite.js";
 import {
   type ClaudeCliFallbackSeed,
@@ -76,7 +76,9 @@ function sqliteTranscriptHasAssistantMessage(transcriptLocator: string | undefin
   if (!transcriptLocator) {
     return false;
   }
-  const scope = resolveSqliteSessionTranscriptScopeForPath({ transcriptPath: transcriptLocator });
+  const scope = resolveSqliteSessionTranscriptScopeForLocator({
+    transcriptLocator: transcriptLocator,
+  });
   if (!scope) {
     return false;
   }

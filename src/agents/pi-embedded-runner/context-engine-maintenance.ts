@@ -306,7 +306,7 @@ export function buildContextEngineMaintenanceRuntimeContext(params: {
       }
       const rewriteTranscriptEntriesInFile = async () =>
         await rewriteTranscriptEntriesInSqliteTranscript({
-          transcriptPath: params.transcriptLocator,
+          transcriptLocator: params.transcriptLocator,
           agentId: params.sessionAgentId,
           sessionId: params.sessionId,
           sessionKey: params.sessionKey,

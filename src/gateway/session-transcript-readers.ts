@@ -64,7 +64,7 @@ function loadScopedTranscriptEvents(params: {
     const scope = resolveSqliteSessionTranscriptScope({
       agentId: params.agentId,
       sessionId: params.sessionId,
-      transcriptPath: params.transcriptLocator,
+      transcriptLocator: params.transcriptLocator,
     });
     if (!scope || !hasSqliteSessionTranscriptEvents(scope)) {
       return undefined;

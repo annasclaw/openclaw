@@ -245,7 +245,7 @@ export async function runPreparedCliAgent(
       await appendSessionTranscriptMessage({
         agentId: params.agentId ?? DEFAULT_AGENT_ID,
         sessionId: params.sessionId,
-        transcriptPath: params.transcriptLocator,
+        transcriptLocator: params.transcriptLocator,
         cwd: params.workspaceDir,
         now: nowMs,
         message: {

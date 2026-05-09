@@ -104,7 +104,7 @@ export async function readBtwTranscriptMessages(params: {
   try {
     const scope = resolveSqliteSessionTranscriptScope({
       sessionId: params.sessionId,
-      transcriptPath: params.transcriptLocator,
+      transcriptLocator: params.transcriptLocator,
     });
     if (!scope) {
       return [];

@@ -19,7 +19,7 @@ import {
   loadSqliteSessionTranscriptEvents,
   recordSqliteSessionTranscriptSnapshot,
   replaceSqliteSessionTranscriptEvents,
-  resolveSqliteSessionTranscriptScopeForPath,
+  resolveSqliteSessionTranscriptScopeForLocator,
 } from "../config/sessions/transcript-store.sqlite.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
@@ -98,8 +98,8 @@ function loadTranscriptEntriesFromSqlite(params: {
   let agentId = params.agentId?.trim() || DEFAULT_AGENT_ID;
   let sessionId = params.sessionId?.trim();
   if (!sessionId && params.transcriptLocator?.trim()) {
-    const scope = resolveSqliteSessionTranscriptScopeForPath({
-      transcriptPath: params.transcriptLocator,
+    const scope = resolveSqliteSessionTranscriptScopeForLocator({
+      transcriptLocator: params.transcriptLocator,
     });
     agentId = scope?.agentId ?? agentId;
     sessionId = scope?.sessionId;
@@ -144,7 +144,7 @@ function createCheckpointVirtualTranscriptPath(params: {
   if (!sourceFile) {
     return undefined;
   }
-  const scope = resolveSqliteSessionTranscriptScopeForPath({ transcriptPath: sourceFile });
+  const scope = resolveSqliteSessionTranscriptScopeForLocator({ transcriptLocator: sourceFile });
   return createSqliteSessionTranscriptLocator({
     agentId: scope?.agentId ?? DEFAULT_AGENT_ID,
     sessionId: params.checkpointId,
@@ -187,7 +187,7 @@ export async function forkCompactionCheckpointTranscriptAsync(params: {
   const sessionId = randomUUID();
   const timestamp = new Date().toISOString();
   const sourceScope = sourceFile
-    ? resolveSqliteSessionTranscriptScopeForPath({ transcriptPath: sourceFile })
+    ? resolveSqliteSessionTranscriptScopeForLocator({ transcriptLocator: sourceFile })
     : undefined;
   const agentId = params.agentId?.trim() || sourceScope?.agentId || DEFAULT_AGENT_ID;
   const transcriptLocator = createSqliteSessionTranscriptLocator({ agentId, sessionId });
@@ -204,7 +204,6 @@ export async function forkCompactionCheckpointTranscriptAsync(params: {
     replaceSqliteSessionTranscriptEvents({
       agentId,
       sessionId,
-      transcriptPath: transcriptLocator,
       events: [
         header,
         ...entries.filter((entry) => (entry as { type?: unknown }).type !== "session"),
@@ -261,8 +260,8 @@ export async function captureCompactionCheckpointSnapshotAsync(params: {
     sourceFile: transcriptLocator,
     checkpointId: snapshotSessionId,
   });
-  const sourceScope = resolveSqliteSessionTranscriptScopeForPath({
-    transcriptPath: transcriptLocator,
+  const sourceScope = resolveSqliteSessionTranscriptScopeForLocator({
+    transcriptLocator,
   });
   const snapshotAgentId = params.agentId?.trim() || sourceScope?.agentId || DEFAULT_AGENT_ID;
   const snapshotHeader: SessionHeader = {
@@ -274,7 +273,6 @@ export async function captureCompactionCheckpointSnapshotAsync(params: {
   replaceSqliteSessionTranscriptEvents({
     agentId: snapshotAgentId,
     sessionId: snapshotSessionId,
-    transcriptPath: snapshotFile,
     events: [
       snapshotHeader,
       ...entries.filter((entry) => (entry as { type?: unknown }).type !== "session"),

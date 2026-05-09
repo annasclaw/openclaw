@@ -202,7 +202,7 @@ async function persistTextTurnTranscript(
   });
   if (promptText) {
     await appendSessionTranscriptMessage({
-      transcriptPath: transcriptLocator,
+      transcriptLocator: transcriptLocator,
       agentId: params.sessionAgentId,
       sessionId: params.sessionId,
       cwd: params.sessionCwd,
@@ -230,7 +230,7 @@ async function persistTextTurnTranscript(
     }
     if (appendAssistant) {
       await appendSessionTranscriptMessage({
-        transcriptPath: transcriptLocator,
+        transcriptLocator: transcriptLocator,
         agentId: params.sessionAgentId,
         sessionId: params.sessionId,
         cwd: params.sessionCwd,

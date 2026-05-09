@@ -6,7 +6,7 @@ import {
 import {
   loadSqliteSessionTranscriptEvents,
   replaceSqliteSessionTranscriptEvents,
-  resolveSqliteSessionTranscriptScopeForPath,
+  resolveSqliteSessionTranscriptScopeForLocator,
 } from "../../config/sessions/transcript-store.sqlite.js";
 import type { OpenClawConfig } from "../../config/types.openclaw.js";
 import { normalizeAgentId } from "../../routing/session-key.js";
@@ -29,8 +29,6 @@ export type CompactionTranscriptRotation = {
   rotated: boolean;
   reason?: string;
   sessionId?: string;
-  transcriptPath?: string;
-  /** Compatibility metadata for callers that still surface `transcriptLocator`. */
   transcriptLocator?: string;
   compactionEntryId?: string;
   leafId?: string;
@@ -94,7 +92,6 @@ export async function rotateTranscriptAfterCompaction(params: {
   replaceSqliteSessionTranscriptEvents({
     agentId: sourceScope.agentId,
     sessionId,
-    transcriptPath: successorTranscriptPath,
     events: [header, ...successorEntries],
   });
   new TranscriptState({ header, entries: successorEntries }).buildSessionContext();
@@ -102,7 +99,6 @@ export async function rotateTranscriptAfterCompaction(params: {
   return {
     rotated: true,
     sessionId,
-    transcriptPath: successorTranscriptPath,
     transcriptLocator: successorTranscriptPath,
     compactionEntryId: compaction.id,
     leafId: successorEntries[successorEntries.length - 1]?.id,
@@ -117,7 +113,7 @@ export async function rotateTranscriptFileAfterCompaction(params: {
 }): Promise<CompactionTranscriptRotation> {
   const state = loadTranscriptStateFromSqlite({
     agentId: params.agentId,
-    transcriptPath: params.transcriptLocator,
+    transcriptLocator: params.transcriptLocator,
   });
   if (!state) {
     return { rotated: false, reason: "transcript not in SQLite" };
@@ -133,8 +129,8 @@ export async function rotateTranscriptFileAfterCompaction(params: {
 function resolveSourceTranscriptScope(params: { agentId?: string; transcriptLocator: string }): {
   agentId: string;
 } | null {
-  const existing = resolveSqliteSessionTranscriptScopeForPath({
-    transcriptPath: params.transcriptLocator,
+  const existing = resolveSqliteSessionTranscriptScopeForLocator({
+    transcriptLocator: params.transcriptLocator,
   });
   if (!existing) {
     return null;
@@ -147,10 +143,10 @@ function resolveSourceTranscriptScope(params: { agentId?: string; transcriptLoca
 
 function loadTranscriptStateFromSqlite(params: {
   agentId?: string;
-  transcriptPath: string;
+  transcriptLocator: string;
 }): TranscriptState | null {
-  const scope = resolveSqliteSessionTranscriptScopeForPath({
-    transcriptPath: params.transcriptPath,
+  const scope = resolveSqliteSessionTranscriptScopeForLocator({
+    transcriptLocator: params.transcriptLocator,
   });
   const sessionId = scope?.sessionId;
   if (!sessionId) {
