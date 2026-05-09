@@ -459,7 +459,7 @@ export async function startGatewaySidecars(params: {
   const skipChannels =
     isTruthyEnvValue(process.env.OPENCLAW_SKIP_CHANNELS) ||
     isTruthyEnvValue(process.env.OPENCLAW_SKIP_PROVIDERS);
-  await measureStartup(params.startupTrace, "sidecars.channels", async () => {
+  const channelsPromise = measureStartup(params.startupTrace, "sidecars.channels", async () => {
     if (!skipChannels) {
       try {
         schedulePrimaryModelPrewarm(
@@ -515,9 +515,16 @@ export async function startGatewaySidecars(params: {
     }
   });
 
+  // Run channels and ACP backend in parallel (they have zero dependency on each other)
+  const acpBackendPromise = params.cfg.acp?.enabled
+    ? waitForAcpRuntimeBackendReady({ backendId: params.cfg.acp?.backend })
+    : Promise.resolve(true);
+
+  await Promise.all([channelsPromise, acpBackendPromise]);
+
+  // ACP identity reconciliation (after both channels and ACP backend are ready)
   if (params.cfg.acp?.enabled) {
     void (async () => {
-      await waitForAcpRuntimeBackendReady({ backendId: params.cfg.acp?.backend });
       const [{ getAcpSessionManager }, { ACP_SESSION_IDENTITY_RENDERER_VERSION }] =
         await Promise.all([
           import("../acp/control-plane/manager.js"),
