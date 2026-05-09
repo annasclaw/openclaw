@@ -8,7 +8,7 @@ import {
 import { emitSessionTranscriptUpdate } from "../../sessions/transcript-events.js";
 import { extractAssistantVisibleText } from "../../shared/chat-message-content.js";
 import { createSqliteSessionTranscriptLocator } from "./paths.js";
-import { resolveAndPersistSessionTranscriptLocator } from "./session-locator.js";
+import { resolveAndPersistSessionTranscriptIdentity } from "./session-locator.js";
 import { getSessionEntry, normalizeSessionRowKey } from "./store.js";
 import { parseSessionThreadInfo } from "./thread-info.js";
 import { appendSessionTranscriptMessage } from "./transcript-append.js";
@@ -109,19 +109,12 @@ export async function resolveSessionTranscriptTarget(params: {
   let sessionEntry = params.sessionEntry;
 
   const threadIdFromSessionKey = parseSessionThreadInfo(params.sessionKey).threadId;
-  const fallbackTranscriptLocator = !sessionEntry?.transcriptLocator
-    ? createSqliteSessionTranscriptLocator({
-        sessionId: params.sessionId,
-        agentId: params.agentId,
-        topicId: params.threadId ?? threadIdFromSessionKey,
-      })
-    : undefined;
-  const resolvedTranscript = await resolveAndPersistSessionTranscriptLocator({
+  const resolvedTranscript = await resolveAndPersistSessionTranscriptIdentity({
     sessionId: params.sessionId,
     sessionKey: params.sessionKey,
     sessionEntry,
     agentId: params.agentId,
-    fallbackTranscriptLocator,
+    topicId: params.threadId ?? threadIdFromSessionKey,
   });
   const transcriptLocator = resolvedTranscript.transcriptLocator;
   sessionEntry = resolvedTranscript.sessionEntry;
@@ -247,7 +240,7 @@ export async function appendExactAssistantMessageToSessionTranscript(params: {
 
   let transcriptLocator: string;
   try {
-    const resolvedTranscript = await resolveAndPersistSessionTranscriptLocator({
+    const resolvedTranscript = await resolveAndPersistSessionTranscriptIdentity({
       sessionId: entry.sessionId,
       sessionKey: normalizedKey,
       sessionEntry: entry,

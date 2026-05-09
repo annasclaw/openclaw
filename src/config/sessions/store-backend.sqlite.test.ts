@@ -32,6 +32,11 @@ function sqliteTranscript(agentId: string, sessionId: string): string {
   return createSqliteSessionTranscriptLocator({ agentId, sessionId });
 }
 
+function withoutTranscriptLocator(entry: SessionEntry): SessionEntry {
+  const { transcriptLocator: _transcriptLocator, ...rest } = entry;
+  return rest;
+}
+
 afterEach(() => {
   closeOpenClawAgentDatabasesForTest();
   closeOpenClawStateDatabaseForTest();
@@ -61,10 +66,10 @@ describe("SQLite session store backend", () => {
     upsertSessionEntry({ agentId: "ops", env, sessionKey: "discord:u1", entry: opsEntry });
 
     expect(loadSqliteSessionEntries({ agentId: "main", env })).toEqual({
-      "discord:u1": mainEntry,
+      "discord:u1": withoutTranscriptLocator(mainEntry),
     });
     expect(loadSqliteSessionEntries({ agentId: "ops", env })).toEqual({
-      "discord:u1": opsEntry,
+      "discord:u1": withoutTranscriptLocator(opsEntry),
     });
   });
 
@@ -96,7 +101,7 @@ describe("SQLite session store backend", () => {
     expect(fs.existsSync(storePath)).toBe(false);
     expect(loadSqliteSessionEntries({ agentId: "ops", env })).toEqual({
       "discord:ops": {
-        ...entry,
+        ...withoutTranscriptLocator(entry),
         updatedAt: 200,
         modelOverride: "gpt-5.5",
       },
@@ -138,12 +143,10 @@ describe("SQLite session store backend", () => {
     expect(loadSqliteSessionEntries({ agentId: "ops", env })).toEqual({
       "discord:ops": expect.objectContaining({
         sessionId: "ops-session",
-        transcriptLocator: sqliteTranscript("ops", "ops-session"),
         modelOverride: "gpt-5.5",
       }),
       "discord:other": {
         sessionId: "other-session",
-        transcriptLocator: sqliteTranscript("ops", "other-session"),
         updatedAt: 50,
       },
     });
@@ -203,7 +206,7 @@ describe("SQLite session store backend", () => {
 
     expect(fs.existsSync(storePath)).toBe(false);
     expect(loadSqliteSessionEntries({ agentId: "ops", env })).toEqual({
-      "discord:ops": entry,
+      "discord:ops": withoutTranscriptLocator(entry),
     });
   });
 });
