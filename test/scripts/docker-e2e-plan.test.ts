@@ -50,13 +50,15 @@ describe("scripts/lib/docker-e2e-plan", () => {
       bareImage: true,
       e2eImage: true,
       functionalImage: true,
-      liveImage: false,
+      liveImage: true,
       package: true,
     });
     expect(plan.credentials).toEqual(["anthropic", "openai"]);
     expect(plan.lanes.map((lane) => lane.name)).toContain("install-e2e-openai");
+    expect(plan.lanes.map((lane) => lane.name)).toContain("codex-on-demand");
     expect(plan.lanes.map((lane) => lane.name)).toContain("install-e2e-anthropic");
     expect(plan.lanes.map((lane) => lane.name)).toContain("mcp-channels");
+    expect(plan.lanes.map((lane) => lane.name)).toContain("live-plugin-tool");
     expect(plan.lanes.map((lane) => lane.name)).toContain("commitments-safety");
     expect(plan.lanes.map((lane) => lane.name)).toContain("bundled-plugin-install-uninstall-0");
     expect(plan.lanes.map((lane) => lane.name)).toContain("bundled-plugin-install-uninstall-23");
@@ -152,7 +154,10 @@ describe("scripts/lib/docker-e2e-plan", () => {
       releaseChunk: "plugins-runtime-install-h",
     });
 
-    expect(packageInstallOpenAi.lanes.map((lane) => lane.name)).toEqual(["install-e2e-openai"]);
+    expect(packageInstallOpenAi.lanes.map((lane) => lane.name)).toEqual([
+      "install-e2e-openai",
+      "codex-on-demand",
+    ]);
     expect(packageInstallAnthropic.lanes.map((lane) => lane.name)).toEqual([
       "install-e2e-anthropic",
     ]);
@@ -208,12 +213,19 @@ describe("scripts/lib/docker-e2e-plan", () => {
     expect(pluginsRuntimeServices.lanes.map((lane) => lane.name)).toEqual([
       "cron-mcp-cleanup",
       "openai-web-search-minimal",
+      "live-plugin-tool",
       "openwebui",
     ]);
     expect(pluginsRuntimeServices.lanes).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           name: "cron-mcp-cleanup",
+          stateScenario: "empty",
+        }),
+        expect.objectContaining({
+          live: true,
+          name: "live-plugin-tool",
+          resources: ["docker", "live", "live:openai", "npm"],
           stateScenario: "empty",
         }),
       ]),
