@@ -1,7 +1,6 @@
 import path from "node:path";
 import type { SessionEntry } from "../config/sessions/types.js";
 import { normalizeAgentId } from "../routing/session-key.js";
-import { normalizeOptionalString } from "../shared/string-coerce.js";
 
 export { loadCombinedSessionEntriesForGateway } from "../config/sessions/combined-session-entries-gateway.js";
 
@@ -62,14 +61,6 @@ export function resolveTranscriptStemToSessionKeys(params: {
   const matches: string[] = [];
 
   for (const [sessionKey, entry] of Object.entries(store)) {
-    const transcriptLocator = normalizeOptionalString(entry.transcriptLocator);
-    if (transcriptLocator) {
-      const base = path.basename(transcriptLocator);
-      if (base === params.stem) {
-        matches.push(sessionKey);
-        continue;
-      }
-    }
     if (entry.sessionId === params.stem) {
       matches.push(sessionKey);
     }
