@@ -953,7 +953,6 @@ async function agentCommandInternal(
       runId,
       sessionId,
       sessionKey,
-      transcriptLocator,
       provider,
       modelId: model,
       workspaceDir,
